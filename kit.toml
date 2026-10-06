@@ -1,0 +1,16 @@
+# agent-brigade settings. Format: core/docs/config.md
+# This is the kit's OWN development config. `python3 core/scripts/init.py` replaces it in your copy.
+kit_dev = true
+profile = "project"
+size = "full"
+
+[paths]
+specs = "dev/specs"
+changes = "dev/changes"
+reports = "dev/reports"
+
+[ownership]
+frozen = ["AGENTS.md", "CLAUDE.md", "kit.toml", "degit.json", ".github/", "core/docs/config.md", "core/docs/method.md", "core/scripts/kitlib.py"]
+
+[pr]
+max_lines = 0
