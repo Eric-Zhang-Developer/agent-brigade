@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from check_gates import fmt, offset
-from kitlib import as_list, done_ids, gh_json, git, git_lines, load_config, load_specs, load_toml, parse_title, parser, root_from, specs_dir
+from kitlib import as_list, done_ids, gh_json, git, load_config, load_specs, load_toml, parse_title, parser, root_from, specs_dir
 
 
 def age_minutes(iso: str, now: datetime) -> int:
@@ -61,7 +61,8 @@ def build(root: Path, cfg: dict, now: datetime, offline: bool) -> str:
     out.append("## In progress")
     if prs is None:
         out.append("_From local branches; PR state unknown (offline or gh unavailable)._")
-        for row in git_lines(root, "for-each-ref", "refs/heads", "--format=%(refname:short)\t%(committerdate:iso-strict)"):
+        refs = git(root, "for-each-ref", "refs/heads", "--format=%(refname:short)\t%(committerdate:iso-strict)", check=False)
+        for row in refs.splitlines():
             name, when = row.split("\t")
             out.append(f"- `{name}`, last commit {age_minutes(when, now)} min ago")
     else:
