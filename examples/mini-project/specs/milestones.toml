@@ -1,0 +1,6 @@
+[[milestone]]
+name = "first-ship"
+ship = "2026-11-01"
+freeze_days = 2
+features = ["F01", "F02"]
+cut = ["F03"]

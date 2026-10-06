@@ -1,0 +1,4 @@
+[[path]]
+prefix = "jotter/store.py"
+owners = ["@your-github-handle"]
+why = "storage format is a one-way door"
