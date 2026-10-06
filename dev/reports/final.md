@@ -12,8 +12,8 @@
   marker) was blocked by the hook.
 - The kit passes its own checks: `check_markers --all` (it caught two of its own test fixtures, since fixed) and
   `check_ownership --lint-specs`.
-- **Not yet verified:** GitHub Actions on the pushed branch, `npx degit` against the real repo, and branch
-  protection behavior on the private repo.
+- GitHub Actions on PR #1: green in 14 s on Python 3.11, running 64 kit tests plus both examples (10 and 5 tests).
+- **Not yet verified:** `npx degit` against the real repo (it's private), and branch protection on the private repo.
 
 ## Size
 8 scripts, 1,254 lines (largest: `kitlib.py` at 201). Tests: 825 lines. Docs (core + profiles): 916 lines.
