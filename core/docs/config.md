@@ -99,12 +99,17 @@ file starting with that. No entry may be a prefix of another feature's entry or 
 
 ## `gates.toml` (hackathon, at `<specs>/gates.toml`)
 
+Only the latest gate whose time has passed applies; each one replaces the one before it.
+
 ```toml
 run_start = "2026-10-10T09:00:00-04:00"   # must include a UTC offset
 
 [[gate]]
 at = "0:00"                    # H:MM after run_start
 only = ["F00"]                 # only these IDs may run
+
+[[gate]]
+at = "1:00"                    # a gate with no rule is open: lifts the earlier `only`
 
 [[gate]]
 at = "20:00"
