@@ -29,7 +29,7 @@ class Markers(helpers.RepoCase):
         self.assertIn("bad.txt:2:", out)
 
     def test_base_only_added_lines(self):
-        self.commit("old debug", {"old.js": "console.log(1)\n"})   # already on main: not this PR's problem
+        self.commit("old debug", {"old.js": "console" + ".log(1)\n"})   # already on main: not this PR's problem
         self.branch("work")
         self.commit("new", {"new.py": "ok = True\n" + "break" + "point()\n"})
         rc, out = run(self.root, "--base", "main")
@@ -39,7 +39,7 @@ class Markers(helpers.RepoCase):
 
     def test_all_with_ignore_allow_and_binary(self):
         self.commit("files", {
-            "vendor/lib.js": "console.log(1)\n",
+            "vendor/lib.js": "console" + ".log(1)\n",
             "docs.md": f"{EQ}  markers: allow\n",
             "img.bin": "\0\0" + LT + " x\n",
         })

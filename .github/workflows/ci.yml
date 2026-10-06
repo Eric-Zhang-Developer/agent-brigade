@@ -1,0 +1,45 @@
+# The kit's own CI: unit tests on the Python floor, every check on the kit itself and on both examples.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Unit tests
+        run: |
+          git config --global user.email ci@example.com
+          git config --global user.name ci
+          python3 -m unittest discover -s core/tests -t core/tests -v
+
+      - name: Kit checks
+        run: |
+          python3 core/scripts/check_ownership.py --lint-specs
+          python3 core/scripts/check_markers.py --all
+
+      - name: Examples end to end
+        run: |
+          for ex in examples/*/; do
+            echo "::group::$ex"
+            python3 core/scripts/check_ownership.py --root "$ex" --lint-specs
+            python3 core/scripts/check_markers.py --root "$ex" --all
+            python3 core/scripts/status_report.py --root "$ex" --offline --out -
+            python3 -m unittest discover -s "$ex" -t "$ex" -v
+            echo "::endgroup::"
+          done
