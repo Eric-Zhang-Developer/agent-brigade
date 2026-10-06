@@ -98,3 +98,11 @@ in `budget.md`. Billing alerts are not caps.
 A change to behavior or claims updates its spec and acceptance criteria in the same PR. Status and pitch text must
 keep four things apart: *merged*, *checked by CI*, *verified live*, and *tried by a real user*. Say which one you
 mean.
+
+## Lite size
+For one agent on a weekend project, keep the rules that protect you and drop the ones that coordinate a crowd:
+- **Keep:** specs, the inbox, done notes, decision records, the pre-commit hook, CI, never-invent, and one-way doors.
+- **Drop:** lanes, assignments and the reporter. Claim when ready: open the PR when there's something to review,
+  not first. Stale-claim rules don't apply.
+- Still one feature per branch, and still `[F<n>]` titles, so the history reads the same if you upgrade later
+  (`upgrading.md`).
