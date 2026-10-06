@@ -102,7 +102,7 @@ file starting with that. No entry may be a prefix of another feature's entry or 
 Only the latest gate whose time has passed applies; each one replaces the one before it.
 
 ```toml
-run_start = "2026-10-10T09:00:00-04:00"   # must include a UTC offset
+run_start = "2026-10-10T09:00:00-04:00"   # must include a UTC offset; "" = gates off (set it in the launch commit)
 
 [[gate]]
 at = "0:00"                    # H:MM after run_start

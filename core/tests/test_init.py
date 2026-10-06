@@ -47,6 +47,9 @@ class Init(unittest.TestCase):
                     ".github/workflows/ci.yml", ".github/pull_request_template.md"):
             self.assertTrue((self.root / rel).exists(), rel)
         self.assertFalse((self.root / "NOW.md").exists())
+        self.assertEqual((self.root / ".github/workflows/ci.yml").read_text(),
+                         (helpers.KIT / "core/ci/ci.yml").read_text())   # user CI, not the kit's own
+        self.assertFalse((self.root / "degit.json").exists())
         self.assertIn("not a git repo yet", r.stdout)
         # the copy passes its own checks straight away
         self.assertEqual(check(self.root, "check_ownership.py", "--lint-specs").returncode, 0)

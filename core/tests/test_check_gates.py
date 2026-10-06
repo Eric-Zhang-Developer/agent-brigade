@@ -122,6 +122,14 @@ class Project(Base):
         self.assertEqual(self.gate("[F02] b", "2026-11-20T12:00:00+00:00")[0], 0)
 
 
+class EmptyStart(Base):
+    files = {"kit.toml": 'profile = "hackathon"\n', "specs/gates.toml": 'run_start = ""\n[[gate]]\nat = "0:00"\nhard_stop = true\n'}
+
+    def test_empty_run_start_means_gates_off(self):
+        rc, out = self.gate("[F00] boot", "2026-10-10T12:00:00+00:00")
+        self.assertEqual(rc, 0, out)
+
+
 class Missing(Base):
     files = {"kit.toml": 'profile = "hackathon"\n'}
 

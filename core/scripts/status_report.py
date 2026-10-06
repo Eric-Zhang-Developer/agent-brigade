@@ -23,8 +23,8 @@ def time_left(root, cfg, now: datetime) -> str:
     d = specs_dir(root, cfg)
     if cfg["profile"] == "hackathon":
         g = load_toml(d / "gates.toml")
-        if not g:
-            return "no gates.toml"
+        if not g or not g.get("run_start"):
+            return "gates off (no gates.toml or empty run_start)"
         elapsed = now - datetime.fromisoformat(g["run_start"])
         ahead = sorted((offset(x["at"]), x) for x in g.get("gate", []) if offset(x["at"]) > elapsed)
         if not ahead:

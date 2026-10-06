@@ -118,6 +118,11 @@ def main(argv=None) -> int:
         if (root / "dev").exists():
             shutil.rmtree(root / "dev")
             print("init: removed the kit's own dev/ folder")
+        # the copy carries the kit's own CI; swap in the user template (copy_new below never overwrites)
+        ci = root / ".github" / "workflows" / "ci.yml"
+        ci.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(KIT / "core" / "ci" / "ci.yml", ci)
+        (root / "degit.json").unlink(missing_ok=True)
         old = {}
 
     if not old:

@@ -114,8 +114,8 @@ def main(argv=None) -> int:
     reason, gate, summary = None, None, ""
     if cfg["profile"] == "hackathon":
         gates = load_toml(specs_dir(root, cfg) / "gates.toml")
-        if gates is None:
-            summary = "no gates.toml: time gates not enforced"
+        if gates is None or not gates.get("run_start"):
+            summary = "no gates.toml or empty run_start: time gates not enforced"
         else:
             specs = load_specs(root, cfg)
 
