@@ -23,6 +23,6 @@ and merged into a single spec in about 20 minutes. That table turned five opinio
 4. **Keep and drop, with reasons.** For each plan, write what you keep and what you drop, and why. Merge the keeps
    into the winner.
 5. **Write the non-negotiables as exact rules** in `mission.md` ("under 25 miles; exactly 25 counts").
-6. **Stage the ambition** in `roadmap.md`: R0 a safe demo by a fixed hour, R1 the core, R2 the ambitious target,
-   R3 one stretch picked at a set hour.
+6. **Stage the ambition** as milestones in `specs/milestones.toml`: a safe demo by a fixed hour, the core, then the
+   ambitious target and one stretch in the final milestone. Say why in `roadmap.md`.
 7. Delete `plans/`, or mark it read-only. The spec wins from here on.

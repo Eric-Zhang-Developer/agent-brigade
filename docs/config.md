@@ -11,7 +11,8 @@ CLAUDE.md                     @AGENTS.md
 .agents/scripts/*.py          refreshed on every re-install
 .agents/hooks/pre-commit      enabled with git config core.hooksPath .agents/hooks
 specs/                        mission, tech-stack, roadmap, features/_template, decisions/
-specs/gates.toml              hackathon        NOW.md, specs/milestones.toml, specs/review-paths.toml   project
+specs/milestones.toml         what ships when (both profiles)
+NOW.md, specs/review-paths.toml   project only
 changes/                      done notes
 .github/workflows/ci.yml  .github/pull_request_template.md  .github/ISSUE_TEMPLATE/needs-human.md
 ```
@@ -20,6 +21,7 @@ changes/                      done notes
 Every key except `profile` is optional. The defaults are shown.
 
 ```toml
+schema = 3                     # layout version, written by the installer; it stops on an older one
 profile = "hackathon"          # hackathon | project
 size = "full"                  # lite | full
 
@@ -29,7 +31,7 @@ changes = "changes"
 reports = "reports"            # deploy receipts, final report
 
 [ownership]
-frozen = ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"]   # only [C<n>] PRs may change these
+frozen = ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"]   # only `contract:` PRs may change these
 open = []                      # any PR may change these (project: ["NOW.md"])
 
 [agents]
@@ -66,35 +68,38 @@ monthly_usd = 0
 reserve_final_hours = 3
 ```
 
-## Feature spec front matter (`specs/features/<ID>-<slug>/spec.md`)
+## Feature spec front matter (`specs/features/<slug>/spec.md`)
+The folder name is the feature's ID: lowercase-kebab, at most 32 characters, not `shipped`, `contract`, `plan`,
+`docs` or `revert`. It names the PR scope (`feat(<slug>)`), the done note (`changes/<slug>.md`) and the branch.
 ```yaml
 ---
-id: F03                        # F<number>, unique
 name: One line
-lane: A                        # full size only
-agent: builder                 # a role or worker name
-phase: 1                       # gates can block a phase
-depends_on: [F01]
-owns: [src/report/, tests/test_report]   # path prefixes, not globs; no overlaps
-cut: ok                        # ok | never
-milestone: v1                  # project, optional
-bootstrap: false               # exactly one feature may be true; it may change anything
+depends_on: [map-data]         # slugs, in features/ or shipped/
+owns: [src/report/, tests/test_report]   # path prefixes, not globs; no overlap with another in-flight feature
+assignee: ""                   # a worker name; empty = anyone
+bootstrap: false               # exactly one feature may be true; it may change anything and merges first
 ---
 ```
+What ships when, and in what order, is in `specs/milestones.toml`, not in the spec.
 
-## PR titles
-| Prefix | Meaning | May change |
+## PR titles ([Conventional Commits](https://www.conventionalcommits.org/))
+| Title | Meaning | May change |
 |---|---|---|
-| `[F<n>] name` | Build feature n; a draft PR is the claim | its `owns`, `changes/F<n>.md`, `specs/features/F<n>-*`, `specs/decisions/F<n>-*`, `open` paths |
-| `[FIX-F<n>] ...` | Repair after merge | same as `[F<n>]` |
-| `[C<n>] ...` | Contract change, additive only | `frozen` paths + `specs/` |
-| `[PLAN] ...` | Planner's batch; a person merges it | `specs/features/`, `specs/roadmap.md` |
-| `[REVERT-<sha>] ...` | Plain `git revert` | exactly that commit's files |
+| `feat(<slug>): ...` | Build the feature (full size: a draft PR is the claim) | its `owns`, its spec folder, `changes/<slug>.md`, `specs/decisions/<slug>-*`, `open` paths |
+| `fix(<slug>): ...` | Repair a feature in flight, done or shipped; also `refactor`, `perf`, `test`, `chore`, `style` | same as `feat` |
+| `fix: ...` (no scope) | Shared code with no spec; same types | anything except `frozen`, `specs/` (decisions allowed), `changes/` and in-flight features' `owns` |
+| `docs: ...` | Status and prose | `open` paths, plus Markdown outside `specs/`, `changes/`, `frozen` and in-flight `owns` |
+| `contract: ...` | Contract change, additive only | `frozen` paths + `specs/` + `open` |
+| `plan: ...` | Planner's batch or a ship; a person merges it | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md` |
+| `revert: ...` or `Revert "..."` | `git revert`, found by its "This reverts commit" line | exactly the reverted commits' files |
+
+`feat` on a feature whose done note is already on the base branch fails: use `fix(<slug>)`. A `!` after the type
+(`feat(api)!:`) is accepted and means nothing extra.
 
 ## GitHub labels (created by `sync_issues.py` on the first push to `main`)
 | Label | Filed by | Means |
 |---|---|---|
-| `feature` | `sync_issues.py` | One per feature spec; closes when `changes/<ID>.md` lands |
+| `feature` | `sync_issues.py` | One per feature spec, matched by a hidden `<!-- spec: <slug> -->` line, on its milestone; closes when `changes/<slug>.md` lands |
 | `needs-human` | agents | A judgment call: context, options, default taken, how to undo |
 | `one-way-door` | agents | With `needs-human`: expensive to undo, so no default was taken |
 | `blocked` | agents | Can't continue until something else happens |
@@ -105,50 +110,35 @@ bootstrap: false               # exactly one feature may be true; it may change 
 ## Other files
 | File | Format |
 |---|---|
-| `changes/<ID>.md` | Done marker, 3–8 lines: shipped, cut, known gaps. Written last. |
-| `specs/decisions/<ID>-<slug>.md` | Context, options, choice, how to undo. `000-*.md` = project-wide defaults. |
+| `changes/<slug>.md` | Done marker, written last: 3–8 lines under `## What shipped`, `## Where it lives`, `## How to check it`, `## Gaps`. |
+| `specs/decisions/<slug>-<topic>.md` | Context, options, choice, how to undo. `000-*.md` = project-wide defaults. |
+| `specs/shipped/<milestone>/` | Written by `ship.py`: the milestone's done specs plus `README.md`, the release walkthrough. |
 | `STOP` (repo root, on `main`) | Exists = every agent stops at its next check. |
 | `<git common dir>/agent-heartbeats/<worker>` | Touched by each agent every loop (first line: its worktree path). Shared by all worktrees; never committed. |
 
-## `specs/gates.toml` (hackathon)
-Only the latest gate whose time has passed applies.
+## `specs/milestones.toml` (both profiles)
+Agents pick the first ready feature in file order: milestones top to bottom, skipping ones whose ship time has
+passed, then features left to right. A spec in no milestone is backlog: listed in status, never picked. Each
+milestone also becomes a GitHub milestone (with its due date) holding its features' issues.
 ```toml
-run_start = ""                 # "2026-10-10T09:00:00-04:00" in the launch commit; "" = gates off
+start = ""                     # hackathon: "2026-10-10T09:00:00-04:00" in the launch commit; enables "+H:MM"
 
-[[gate]]
-at = "0:00"                    # H:MM after run_start
-only = ["F00"]
-
-[[gate]]
-at = "1:00"                    # no kind = open
-
-[[gate]]
-at = "20:00"
-no_new_phase = 3               # phase >= 3 features not started before this may not start
-
-[[gate]]
-at = "30:00"
-freeze = true                  # no [F<n>] except `allow`; FIX/REVERT/C fine
-allow = []
-
-[[gate]]
-at = "34:00"
-report = true                  # only FIX, REVERT and `allow`
-
-[[gate]]
-at = "35:30"
-hard_stop = true
-```
-
-## `specs/milestones.toml` (project)
-```toml
 [[milestone]]
 name = "v1"
-ship = "2026-11-15"            # YYYY-MM-DD, or "" for no date (no freeze)
-freeze_days = 3                # in [ship - freeze_days, ship], only `features` merge
-features = ["F01", "F02"]
-cut = ["F05"]                  # rejected once the freeze starts
+ship = "2026-11-15"            # "YYYY-MM-DD" (through the end of that day, UTC) · "+H:MM" after start ·
+                               # an ISO time with offset · "" = no date (no freeze, never passed)
+freeze = "2d"                  # "2d", "36h" or "H:MM" before ship: only `features` + `allow` merge as feat;
+                               # fixes still merge
+features = ["map-data", "bots"]   # slugs, in priority order
+cut = ["bots"]                 # a subset of features; rejected (feat and fix) once the freeze starts
+allow = []                     # extra slugs that may merge as feat in the freeze or report window
+final = false                  # the last milestone: see below
+report_before = ""             # final only: from ship minus this, only fixes, reverts, docs and `allow`
 ```
+Rules for every profile: no `feat` merges before the bootstrap feature's done note is on `main`. A final milestone
+also blocks `plan:` during its freeze, allows only fixes, reverts, docs and `allow` from `report_before`, and stops
+every merge at `ship`. With an empty `start`, `+H:MM` times resolve to nothing, so a hackathon's deadlines stay off
+until the launch commit sets it.
 
 ## `specs/review-paths.toml` (project)
 ```toml
@@ -167,12 +157,13 @@ All scripts take `--help` and `--root PATH`. Exit codes: `0` ok, `1` findings/fa
 
 | Script | Usage |
 |---|---|
-| `install.py` (kit root) | `[TARGET] --profile hackathon\|project [--lite\|--full] [--overwrite-agents]` |
+| `install.py` (kit root) | `[TARGET] --profile hackathon\|project [--lite\|--full] [--overwrite-agents] [--upgrade]` |
 | `check_ownership.py` | `--lint-specs` · `--title T [--base REF]` |
 | `check_markers.py` | `--staged` · `--base REF` · `--all` |
 | `check_gates.py` | `--title T [--base REF] [--now ISO]` |
 | `status.py` | `--issue` · `--out FILE\|-` · `[--offline] [--now ISO]` |
 | `sync_issues.py` | `[--dry-run]` |
+| `ship.py` | `MILESTONE [--dry-run]` |
 | `watchdog.py` | `[--once] [--interval SECONDS] [--dry-run]` |
 | `verify_release.py` (hackathon) | `--commit SHA [--url URL]` |
 | `demo_snapshot.py` (hackathon) | `--out DIR [--url URL]` |

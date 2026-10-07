@@ -5,8 +5,8 @@ People decide, agents do. One person can hold several roles, and so can one agen
 ## Humans
 | Role | Does | Doesn't |
 |---|---|---|
-| **Lead** | Owns the constitution, approves `[PLAN]` batches, clears `needs-human` issues, merges contract PRs, picks cuts | Write most of the code |
-| **Builder** (each teammate) | Owns one lane: steers its agents, reviews what they ship, demos it | Push to `main`, or edit outside the lane |
+| **Lead** | Owns the constitution, approves `plan:` batches, clears `needs-human` issues, merges contract PRs, picks cuts | Write most of the code |
+| **Builder** (each teammate) | Owns their features (`assignee` in the spec): steers their agents, reviews what they ship, demos it | Push to `main`, or edit outside their features |
 | **Demo owner** | Owns the live demo, the pitch and the 45-second core loop (`docs/hackathon/pitch.md`) | Merge features after the freeze |
 | **Deploy owner** | Owns the repo settings, hosting and secrets; runs `verify_release.py` | Share secrets in chat |
 
@@ -15,8 +15,8 @@ At ShellHacks, people mostly stopped writing code and started writing decisions.
 ## Agents
 | Role | Does | Cadence |
 |---|---|---|
-| **Builder** | The loop in `AGENTS.md`: claim, build, check, done note, merge | Continuous |
-| **Planner** | Reads status, decisions and `needs-human` issues; drafts specs in a `[PLAN]` PR (`planner.md`) | Hourly (hackathon) / weekly (project) |
+| **Builder** | The loop in `AGENTS.md`: claim (full size), build, check, done note, merge | Continuous |
+| **Planner** | Reads status, decisions and `needs-human` issues; drafts specs in a `plan:` PR (`planner.md`) | Hourly (hackathon) / weekly (project) |
 | **Reporter** | `status.py --issue`, stale-claim comments, final report | Every 30 min (hackathon) / per session (project) |
 | **Judge** | Scores the live build like a judge, writes the 5 hardest questions (`docs/hackathon/judge-agent.md`) | Hours before judging |
 | **Briefer** | Keeps `docs/briefing.md` current (`briefing.md`) | Before judging / weekly |
@@ -24,7 +24,7 @@ At ShellHacks, people mostly stopped writing code and started writing decisions.
 ## Your first hour (for a newer teammate)
 1. Read `AGENTS.md`. It's one page, and it's the whole game.
 2. Take **one** feature the lead assigns you. Open it in its own worktree.
-3. Tell your agent: "Read AGENTS.md and follow it. You're building F<n>." Let it open the draft PR.
+3. Tell your agent: "Read AGENTS.md and follow it. You're building <slug>." Let it follow the loop.
 4. Watch what it does, and ask it to explain anything you don't understand. You'll demo this feature, so you need
    to be able to explain it.
 5. Never `git push` to `main`, and never use `--no-verify`. If the hook or CI blocks you, it's doing its job: ask the

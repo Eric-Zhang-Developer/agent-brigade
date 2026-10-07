@@ -1,4 +1,4 @@
-"""The milestone freeze, replayed: F03 (on the cut list) can merge before the freeze, but not during it."""
+"""The milestone freeze, replayed: tags (on the cut list) can merge before the freeze, but not during it."""
 
 import shutil
 import subprocess
@@ -21,17 +21,17 @@ class Milestone(unittest.TestCase):
         self.git("init", "-q", "-b", "main")
         self.git("add", "-A")
         self.git("commit", "-qm", "main")
-        self.git("checkout", "-qb", "f03-tags")
+        self.git("checkout", "-qb", "tags")
         (self.root / "jotter/tags.py").write_text("def tags_of(note):\n    return note.get('tags', [])\n")
         self.git("add", "-A")
-        self.git("commit", "-qm", "[F03] tags")
+        self.git("commit", "-qm", "feat(tags): tags")
 
     def tearDown(self):
         self._tmp.cleanup()
 
     def gate(self, now):
         return subprocess.run([sys.executable, str(SCRIPTS / "check_gates.py"), "--root", str(self.root),
-                               "--title", "[F03] Tags", "--base", "main", "--now", now], capture_output=True, text=True)
+                               "--title", "feat(tags): tags", "--base", "main", "--now", now], capture_output=True, text=True)
 
     def test_before_freeze_ok(self):
         self.assertEqual(self.gate("2026-10-25T12:00:00+00:00").returncode, 0)
@@ -44,7 +44,19 @@ class Milestone(unittest.TestCase):
     def test_status_shows_the_milestone(self):
         r = subprocess.run([sys.executable, str(SCRIPTS / "status.py"), "--root", str(self.root), "--offline",
                             "--out", "-", "--now", "2026-10-20T12:00:00+00:00"], capture_output=True, text=True)
-        self.assertIn("milestone first-ship ships 2026-11-01 (12 days)", r.stdout)
+        self.assertIn("next milestone first-ship ships in 12d 12h, freeze in 10d 12h", r.stdout)
+
+    def test_ship_archives_the_done_features(self):
+        self.git("checkout", "-q", "main")
+        r = subprocess.run([sys.executable, str(SCRIPTS / "ship.py"), "--root", str(self.root), "first-ship"],
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("tags has no done note; it stays", r.stdout)
+        page = (self.root / "specs/shipped/first-ship/README.md").read_text()
+        self.assertIn("## Search (`search`)", page)
+        lint = subprocess.run([sys.executable, str(SCRIPTS / "check_ownership.py"), "--root", str(self.root),
+                               "--lint-specs"], capture_output=True, text=True)
+        self.assertEqual(lint.returncode, 0, lint.stdout)
 
 
 if __name__ == "__main__":

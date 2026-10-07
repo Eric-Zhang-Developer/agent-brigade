@@ -5,39 +5,34 @@ from contextlib import redirect_stdout
 import helpers
 from check_gates import main
 
-GATES = '''run_start = "2026-10-10T09:00:00-04:00"
-[[gate]]
-at = "0:00"
-only = ["F00"]
-[[gate]]
-at = "2:00"
-no_new_phase = 2
-[[gate]]
-at = "30:00"
-freeze = true
-allow = ["F09"]
-[[gate]]
-at = "34:00"
-report = true
-allow = ["F09"]
-[[gate]]
-at = "35:30"
-hard_stop = true
+MILESTONES = '''start = "2026-10-10T09:00:00-04:00"
+[[milestone]]
+name = "core"
+ship = "+24:00"
+features = ["boot", "alpha"]
+[[milestone]]
+name = "submission"
+ship = "+35:30"
+freeze = "5:30"
+final = true
+report_before = "1:30"
+features = ["beta"]
+cut = ["beta"]
+allow = ["reporter"]
 '''
-START = "2026-10-10T09:00:00-04:00"
 
 
-def at(hhmm):  # ISO time hhmm after run start (same day or later)
+def at(hhmm):  # ISO time hhmm after the start
     h, m = map(int, hhmm.split(":"))
     day, h = 10 + (9 + h) // 24, (9 + h) % 24
     return f"2026-10-{day:02d}T{h:02d}:{m:02d}:00-04:00"
 
 
 class Base(helpers.RepoCase):
-    def gate(self, title, now, files=None, date=None):
+    def gate(self, title, now, files=None):
         if helpers.sh(self.root, "git", "branch", "--show-current").strip() == "main":
             self.branch("work")
-        self.commit("work", files or {"src/x.py": "x\n"}, date=date)
+        self.commit("work", files or {"src/x.py": "x\n"})
         out = io.StringIO()
         with redirect_stdout(out):
             rc = main(["--root", str(self.root), "--title", title, "--base", "main", "--now", now])
@@ -47,97 +42,134 @@ class Base(helpers.RepoCase):
 class Hackathon(Base):
     files = {
         ".agents/config.toml": 'profile = "hackathon"\n[pr]\nwarn_lines = 20\nexclude = ["data/"]\n',
-        "specs/gates.toml": GATES,
-        "specs/features/F01-a/spec.md": helpers.spec("F01", ["src/"], phase=1),
-        "specs/features/F02-b/spec.md": helpers.spec("F02", ["lib/"], phase=2),
+        "specs/milestones.toml": MILESTONES,
+        "specs/features/boot/spec.md": helpers.spec([], extra="bootstrap: true\n"),
+        "specs/features/alpha/spec.md": helpers.spec(["src/"]),
+        "specs/features/beta/spec.md": helpers.spec(["lib/"]),
+        "specs/features/gamma/spec.md": helpers.spec(["etc/"]),
+        "specs/features/reporter/spec.md": helpers.spec(["reports/"]),
+        "changes/boot.md": "done\n",
     }
 
-    def test_before_start_no_gate(self):
-        self.assertEqual(self.gate("[F01] a", "2026-10-10T08:00:00-04:00")[0], 0)
+    def test_open_before_the_freeze(self):
+        self.assertEqual(self.gate("feat(gamma): g", at("5:00"))[0], 0)       # backlog may merge; it's just not picked
 
-    def test_only(self):
-        rc, out = self.gate("[F01] a", at("0:30"))
+    def test_freeze_only_its_features_and_allow(self):
+        rc, out = self.gate("feat(gamma): g", at("31:00"))
         self.assertEqual(rc, 1)
-        self.assertIn("only ['F00']", out)
+        self.assertIn("submission freeze", out)
+        self.assertEqual(self.gate("fix(alpha): a", at("31:00"))[0], 0)
+        self.assertEqual(self.gate("feat(reporter): r", at("31:00"))[0], 0)
 
-    def test_exactly_at_gate_time_applies(self):
-        self.assertEqual(self.gate("[F02] b", at("2:00"), date=at("2:00"))[0], 1)
+    def test_exactly_at_freeze_time_applies(self):
+        self.assertEqual(self.gate("feat(gamma): g", at("30:00"))[0], 1)
 
-    def test_no_new_phase_blocks_unstarted(self):
-        rc, out = self.gate("[F02] b", at("3:00"), date=at("2:30"))
+    def test_cut_list_in_freeze(self):
+        rc, out = self.gate("fix(beta): b", at("31:00"))
         self.assertEqual(rc, 1)
-        self.assertIn("no new phase 2+", out)
+        self.assertIn("cut list", out)
 
-    def test_no_new_phase_allows_started_before(self):
-        self.assertEqual(self.gate("[F02] b", at("3:00"), date=at("1:00"))[0], 0)
+    def test_no_plans_in_final_freeze(self):
+        self.assertEqual(self.gate("plan: more", at("31:00"))[0], 1)
 
-    def test_freeze(self):
-        self.assertEqual(self.gate("[F01] a", at("31:00"))[0], 1)
-        self.assertEqual(self.gate("[FIX-F01] a", at("31:00"))[0], 0)
-
-    def test_freeze_allow(self):
-        self.assertEqual(self.gate("[F09] report", at("31:00"))[0], 0)
-
-    def test_report_and_hard_stop(self):
-        self.assertEqual(self.gate("[PLAN] more", at("34:30"))[0], 1)
-        self.assertEqual(self.gate("[F09] report", at("34:30"))[0], 0)
-        self.assertEqual(self.gate("[FIX-F01] a", at("36:00"))[0], 1)
+    def test_report_window_and_hard_stop(self):
+        self.assertEqual(self.gate("feat(reporter): r", at("34:30"))[0], 0)
+        self.assertEqual(self.gate("fix(alpha): a", at("34:30"))[0], 0)
+        rc, out = self.gate("contract: late", at("34:30"))
+        self.assertEqual(rc, 1)
+        self.assertIn("report window", out)
+        rc, out = self.gate("fix(alpha): a", at("35:30"))
+        self.assertEqual(rc, 1)
+        self.assertIn("hard stop", out)
 
     def test_large_pr_warns_never_fails(self):
         big = "".join(f"{i}\n" for i in range(50))
-        rc, out = self.gate("[F01] a", at("5:00"), {"src/big.py": big})
+        rc, out = self.gate("feat(alpha): a", at("5:00"), {"src/big.py": big})
         self.assertEqual(rc, 0, out)
         self.assertIn("large PR (50 changed lines, guideline 20)", out)  # ::warning:: in Actions
 
     def test_excluded_paths_dont_count(self):
         big = "".join(f"{i}\n" for i in range(50))
-        rc, out = self.gate("[F01] a", at("5:00"), {"data/big.json": big})
+        rc, out = self.gate("feat(alpha): a", at("5:00"), {"data/big.json": big})
         self.assertNotIn("large PR", out)
 
+    def test_summary(self):
+        out = self.gate("feat(alpha): a", at("5:00"))[1]
+        self.assertIn("elapsed 5:00, next milestone core ships in 19:00", out)
+
     def test_bad_title(self):
-        self.assertEqual(self.gate("whatever", at("5:00"))[0], 1)
+        self.assertEqual(self.gate("[F01] old", at("5:00"))[0], 1)
+
+
+class BootstrapFirst(Base):
+    files = {
+        ".agents/config.toml": 'profile = "project"\n',
+        "specs/features/boot/spec.md": helpers.spec([], extra="bootstrap: true\n"),
+        "specs/features/alpha/spec.md": helpers.spec(["src/"]),
+    }
+
+    def test_nothing_before_bootstrap(self):
+        rc, out = self.gate("feat(alpha): a", "2026-10-10T12:00:00+00:00")
+        self.assertEqual(rc, 1)
+        self.assertIn("bootstrap first: boot", out)
+        self.assertEqual(self.gate("feat(boot): skeleton", "2026-10-10T12:00:00+00:00")[0], 0)
+        self.assertEqual(self.gate("fix: typo", "2026-10-10T12:00:00+00:00")[0], 0)
 
 
 class Project(Base):
     files = {
         ".agents/config.toml": 'profile = "project"\n[pr]\nwarn_lines = 0\n',
-        "specs/milestones.toml": '[[milestone]]\nname = "v1"\nship = "2026-11-15"\nfreeze_days = 3\n'
-                                 'features = ["F01"]\ncut = ["F03"]\n[[milestone]]\nname = "later"\nship = ""\n',
+        "specs/milestones.toml": '[[milestone]]\nname = "v1"\nship = "2026-11-15"\nfreeze = "3d"\n'
+                                 'features = ["alpha", "gamma"]\ncut = ["gamma"]\n[[milestone]]\nname = "later"\nship = ""\n',
     }
 
     def test_outside_freeze_anything(self):
-        self.assertEqual(self.gate("[F02] b", "2026-11-01T12:00:00+00:00")[0], 0)
+        self.assertEqual(self.gate("feat(beta): b", "2026-11-01T12:00:00+00:00")[0], 0)
 
     def test_inside_freeze(self):
-        self.assertEqual(self.gate("[F01] a", "2026-11-13T12:00:00+00:00")[0], 0)
-        rc, out = self.gate("[F02] b", "2026-11-13T12:00:00+00:00")
+        self.assertEqual(self.gate("feat(alpha): a", "2026-11-13T12:00:00+00:00")[0], 0)
+        rc, out = self.gate("feat(beta): b", "2026-11-13T12:00:00+00:00")
         self.assertEqual(rc, 1)
-        self.assertIn("milestone freeze", out)
+        self.assertIn("v1 freeze", out)
+
+    def test_freeze_covers_the_whole_ship_day(self):
+        self.assertEqual(self.gate("feat(beta): b", "2026-11-15T23:30:00+00:00")[0], 1)
+        self.assertEqual(self.gate("feat(beta): b", "2026-11-12T23:30:00+00:00")[0], 0)
 
     def test_cut_list(self):
-        rc, out = self.gate("[FIX-F03] c", "2026-11-12T12:00:00+00:00")
+        rc, out = self.gate("fix(gamma): c", "2026-11-13T12:00:00+00:00")
         self.assertEqual(rc, 1)
         self.assertIn("cut list", out)
 
     def test_after_ship_no_freeze(self):
-        self.assertEqual(self.gate("[F02] b", "2026-11-20T12:00:00+00:00")[0], 0)
+        self.assertEqual(self.gate("feat(beta): b", "2026-11-20T12:00:00+00:00")[0], 0)
 
 
 class EmptyStart(Base):
-    files = {".agents/config.toml": 'profile = "hackathon"\n', "specs/gates.toml": 'run_start = ""\n[[gate]]\nat = "0:00"\nhard_stop = true\n'}
+    files = {".agents/config.toml": 'profile = "hackathon"\n',
+             "specs/milestones.toml": 'start = ""\n[[milestone]]\nname = "end"\nship = "+0:00"\nfinal = true\n'}
 
-    def test_empty_run_start_means_gates_off(self):
-        rc, out = self.gate("[F00] boot", "2026-10-10T12:00:00+00:00")
+    def test_empty_start_means_deadlines_off(self):
+        rc, out = self.gate("fix: x", "2026-10-10T12:00:00+00:00")
         self.assertEqual(rc, 0, out)
+        self.assertIn("no upcoming milestone", out)
 
 
 class Missing(Base):
     files = {".agents/config.toml": 'profile = "hackathon"\n'}
 
-    def test_no_gates_file(self):
-        rc, out = self.gate("[F01] a", "2026-10-10T12:00:00+00:00")
-        self.assertEqual(rc, 0)
-        self.assertIn("not enforced", out)
+    def test_no_milestones_file(self):
+        self.assertEqual(self.gate("fix: x", "2026-10-10T12:00:00+00:00")[0], 0)
+
+
+class Broken(Base):
+    files = {".agents/config.toml": 'profile = "project"\n',
+             "specs/milestones.toml": '[[milestone]]\nname = "v1"\nship = "next week"\n'}
+
+    def test_bad_value_fails_loudly(self):
+        rc, out = self.gate("fix: x", "2026-10-10T12:00:00+00:00")
+        self.assertEqual(rc, 1)
+        self.assertIn("milestones.toml", out)
 
 
 if __name__ == "__main__":

@@ -1,17 +1,10 @@
 # Roadmap
 
-## Stages
-| Stage | Goal | Must be true by |
-|---|---|---|
-| first-ship | Add, list, search | 2026-11-01 (`milestones.toml`) |
+## Where this is going
+One-line notes from the terminal that are quick to add and quick to find again.
 
-## Features
-| ID | Name | Depends on | Stage |
-|---|---|---|---|
-| F00 | Bootstrap: storage contract | | first-ship |
-| F01 | Add and list | F00 | first-ship |
-| F02 | Search | F01 | first-ship |
-| F03 | Tags | F01 | later (cut from first-ship) |
+## Milestones
+- **first-ship** (2026-11-01, `milestones.toml`): add, list and search work. Tags are on the cut list.
 
 ## Not doing
 - Sync, accounts, a GUI

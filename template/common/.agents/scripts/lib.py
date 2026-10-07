@@ -7,9 +7,13 @@ import re
 import shutil
 import subprocess
 import tomllib
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
+SCHEMA = 3  # bump when an upgrade needs more than refreshed scripts; install.py compares it
+
 DEFAULTS = {
+    "schema": SCHEMA,
     "profile": "hackathon",
     "size": "full",
     "paths": {"specs": "specs", "changes": "changes", "reports": "reports"},
@@ -127,16 +131,34 @@ def as_list(v) -> list:
     return [x for x in (v if isinstance(v, list) else [v] if v not in (None, "") else []) if x not in (None, "")]
 
 
-def load_specs(root: Path, cfg: dict) -> dict[str, list[dict]]:
-    """{id: [front matter, ...]} for every features/*/spec.md. A list so duplicates can be reported."""
-    features: dict[str, list[dict]] = {}
-    for p in sorted((specs_dir(root, cfg) / "features").glob("*/spec.md")):
-        if p.parent.name.startswith("_"):
-            continue  # _template
-        fm = front_matter(p.read_text())
-        fm["_path"] = p.relative_to(root).as_posix()
-        features.setdefault(fm.get("id") or "", []).append(fm)
-    return features
+SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+RESERVED = {"shipped", "contract", "plan", "docs", "revert"}
+
+
+def slug_error(slug: str) -> str | None:
+    if not SLUG.match(slug) or len(slug) > 32:
+        return f"{slug!r} is not a slug (lowercase-kebab, at most 32 characters)"
+    if slug in RESERVED:
+        return f"{slug!r} is reserved"
+    return None
+
+
+def _read_spec(root: Path, p: Path, **extra) -> dict:
+    fm = front_matter(p.read_text())
+    fm.update(_path=p.relative_to(root).as_posix(), **extra)
+    return fm
+
+
+def load_specs(root: Path, cfg: dict) -> dict[str, dict]:
+    """{slug: front matter} for every specs/features/<slug>/spec.md. The folder name is the feature's ID."""
+    d = specs_dir(root, cfg) / "features"
+    return {p.parent.name: _read_spec(root, p) for p in sorted(d.glob("*/spec.md")) if not p.parent.name.startswith("_")}
+
+
+def load_shipped(root: Path, cfg: dict) -> dict[str, dict]:
+    """{slug: front matter} for specs/shipped/<milestone>/<slug>/spec.md, moved there by ship.py."""
+    d = specs_dir(root, cfg) / "shipped"
+    return {p.parent.name: _read_spec(root, p, _milestone=p.parent.parent.name) for p in sorted(d.glob("*/*/spec.md"))}
 
 
 def done_ids(root: Path, cfg: dict) -> set[str]:
@@ -144,25 +166,115 @@ def done_ids(root: Path, cfg: dict) -> set[str]:
     return {p.stem for p in d.glob("*.md")} if d.is_dir() else set()
 
 
+def done_at(root: Path, cfg: dict, ref: str) -> set[str]:
+    """Done notes on a ref (e.g. the PR's base), so a PR's own done note doesn't count yet."""
+    changes = cfg["paths"]["changes"].rstrip("/")
+    names = git_lines(root, "ls-tree", "--name-only", ref, f"{changes}/")
+    return {Path(n).stem for n in names if n.endswith(".md")}
+
+
+def in_flight(specs: dict[str, dict], done: set[str]) -> dict[str, dict]:
+    """Specs not done yet. Only these hold their `owns` exclusively."""
+    return {s: fm for s, fm in specs.items() if s not in done}
+
+
+# --- milestones -----------------------------------------------------------------------------------------------------
+
+UTC = timezone.utc
+
+
+def parse_span(v) -> timedelta:
+    """'2d', '36h', '1:30' (hours:minutes) or '' -> timedelta."""
+    v = str(v or "").strip()
+    if not v:
+        return timedelta(0)
+    if m := re.fullmatch(r"(\d+)\s*d", v):
+        return timedelta(days=int(m[1]))
+    if m := re.fullmatch(r"(\d+)\s*h", v):
+        return timedelta(hours=int(m[1]))
+    if m := re.fullmatch(r"(\d+):(\d{2})", v):
+        return timedelta(hours=int(m[1]), minutes=int(m[2]))
+    raise ValueError(f"{v!r} is not a span: use 2d, 36h or H:MM")
+
+
+def parse_when(v, start: datetime | None) -> datetime | None:
+    """'+H:MM' after start, 'YYYY-MM-DD' (through the end of that day, UTC), or an ISO time with an offset.
+    None = no date yet (or an offset with no start)."""
+    v = str(v or "").strip()
+    if not v:
+        return None
+    if v.startswith("+"):
+        return start + parse_span(v[1:]) if start else None
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        return datetime.combine(date.fromisoformat(v) + timedelta(days=1), time.min, UTC)
+    t = datetime.fromisoformat(v)
+    if t.tzinfo is None:
+        raise ValueError(f"{v!r} needs a UTC offset, e.g. 2026-10-10T09:00:00-04:00")
+    return t
+
+
+def load_milestones(root: Path, cfg: dict) -> dict:
+    """{'start': datetime|None, 'milestones': [...]} from specs/milestones.toml, with times resolved.
+
+    Each milestone: name, ship (datetime|None), freeze_start, report_start, final, features, cut, allow.
+    A milestone with no resolvable ship time has no deadline and no freeze. Raises ValueError on a bad value.
+    """
+    raw = load_toml(specs_dir(root, cfg) / "milestones.toml") or {}
+    start = None
+    if raw.get("start"):
+        start = datetime.fromisoformat(str(raw["start"]))
+        if start.tzinfo is None:
+            raise ValueError("milestones.toml start needs a UTC offset, e.g. 2026-10-10T09:00:00-04:00")
+    out = []
+    for m in raw.get("milestone", []):
+        ship = parse_when(m.get("ship"), start)
+        freeze, report = parse_span(m.get("freeze")), parse_span(m.get("report_before"))
+        out.append({
+            "name": str(m.get("name", "")),
+            "ship": ship,
+            "freeze_start": ship - freeze if ship and freeze else None,
+            "report_start": ship - report if ship and m.get("final") and report else None,
+            "final": bool(m.get("final")),
+            "features": as_list(m.get("features")),
+            "cut": as_list(m.get("cut")),
+            "allow": as_list(m.get("allow")),
+        })
+    return {"start": start, "milestones": out}
+
+
+def milestone_of(ms: dict, slug: str) -> dict | None:
+    return next((m for m in ms["milestones"] if slug in m["features"]), None)
+
+
+def pick_order(ms: dict, now: datetime) -> list[str]:
+    """Slugs agents may pick, in order: milestones top to bottom (skipping passed ones), features left to right.
+    Specs in no milestone are the backlog and are never picked."""
+    return [s for m in ms["milestones"] if not (m["ship"] and m["ship"] <= now) for s in m["features"]]
+
+
 # --- PR titles ------------------------------------------------------------------------------------------------------
 
-TITLE = re.compile(
-    r"^\[(?:(?P<fix>FIX-)?(?P<id>F\d+)|(?P<contract>C\d+)|(?P<plan>PLAN)|REVERT-(?P<sha>[0-9a-fA-F]{7,40}))\]"
-)
+TITLE = re.compile(r"^(?P<type>[a-z]+)(?:\((?P<scope>[^)]*)\))?!?:\s*\S")
+CHANGE_TYPES = ("fix", "refactor", "perf", "test", "chore", "style")
+KINDS = {"feat": "feature", **{t: "fix" for t in CHANGE_TYPES}, "docs": "docs", "contract": "contract",
+         "plan": "plan", "revert": "revert"}
+TITLE_HELP = "feat(<slug>): · fix(<slug>): or fix: (also refactor, perf, test, chore, style) · docs: · contract: · plan: · revert:"
 
 
 def parse_title(title: str) -> dict | None:
-    """{'kind': feature|fix|contract|plan|revert, 'id': 'F3' or 'C2' or None, 'sha': ...} or None."""
-    m = TITLE.match((title or "").strip())
-    if not m:
+    """{'kind': feature|fix|docs|contract|plan|revert, 'type': 'refactor', 'scope': slug or None}, or None.
+
+    Conventional Commits; a feature PR must name its feature. GitHub's revert button writes 'Revert "..."'."""
+    title = (title or "").strip()
+    if title.startswith('Revert "'):
+        return {"kind": "revert", "type": "revert", "scope": None}
+    m = TITLE.match(title)
+    if not m or m["type"] not in KINDS:
         return None
-    if m["id"]:
-        return {"kind": "fix" if m["fix"] else "feature", "id": m["id"], "sha": None}
-    if m["contract"]:
-        return {"kind": "contract", "id": m["contract"], "sha": None}
-    if m["plan"]:
-        return {"kind": "plan", "id": None, "sha": None}
-    return {"kind": "revert", "id": None, "sha": m["sha"]}
+    kind, scope = KINDS[m["type"]], (m["scope"] or "").strip() or None
+    if kind == "feature" and not scope:
+        return None
+    return {"kind": kind, "type": m["type"], "scope": scope}
 
 
 # --- git / gh -------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-"""wordfreq (toy example): the frozen public API. F01 and F02 implement it."""
+"""wordfreq (toy example): the frozen public API. The tokenize and rank features implement it."""
 
 from collections import Counter
 

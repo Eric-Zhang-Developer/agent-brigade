@@ -1,19 +1,18 @@
 ---
-id: F00
 name: One line describing the outcome
-lane: A
-agent: builder
-phase: 1
 depends_on: []
 owns: []
-cut: ok
+assignee: ""
 ---
 
-<!-- Copy this folder to features/F<n>-<slug>/. owns = path prefixes (not globs) this feature alone may change;
-no entry may overlap another feature's or a frozen path. cut: ok | never. bootstrap: true on exactly one feature,
-which may change anything. Size it so it merges as one reviewable PR, or plan it in parts. -->
+<!-- Copy this folder to features/<slug>/ (lowercase-kebab, at most 32 characters): the folder name is the
+feature's ID, used in PR titles (`feat(<slug>): ...`), its done note (changes/<slug>.md) and its branch.
+owns = path prefixes (not globs) this feature alone may change while it's in flight; no entry may overlap another
+in-flight feature's or a frozen path. assignee: a worker name, or empty for anyone. Add `bootstrap: true` to exactly
+one feature, which may change anything and merges first. Schedule it by adding the slug to a milestone in
+specs/milestones.toml; until then it's backlog. Size it so it merges as one reviewable PR, or plan it in parts. -->
 
-# F00 Name
+# Name
 
 ## Plan
 1.

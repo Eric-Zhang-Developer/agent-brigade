@@ -10,6 +10,9 @@ templates, changes/, CI, a PR template and an issue template. Nothing in the res
 Re-running is safe: .agents/scripts and .agents/hooks are refreshed (the kit owns them); every other file is only
 created if missing, so your AGENTS.md, specs and NOW.md are never overwritten (use --overwrite-agents to regenerate
 AGENTS.md). Labels and issues are created by CI on the first push to main.
+
+`schema` in .agents/config.toml says which layout a project uses. If it's older than this kit's, the installer
+stops and points at the steps in docs/upgrading.md; re-run with --upgrade once they're done.
 """
 
 import argparse
@@ -24,6 +27,7 @@ from pathlib import Path
 KIT = Path(__file__).resolve().parent
 TEMPLATE = KIT / "template"
 KIT_OWNED = (".agents/scripts/", ".agents/hooks/")
+SCHEMA = int(re.search(r"(?m)^SCHEMA = (\d+)", (TEMPLATE / "common/.agents/scripts/lib.py").read_text())[1])
 CODEOWNERS_HEADER = "# Generated from specs/review-paths.toml by the installer. Edit that file and re-run it."
 
 
@@ -32,6 +36,13 @@ def render_agents(profile: str, size: str) -> str:
     text = (parts / "agents-common.md").read_text()
     read_now = "\n   Project: read `NOW.md` before all of these." if profile == "project" else ""
     text = text.replace("__PROFILE_READ__", read_now)
+    if size == "lite":
+        claim = ("2. No claim in lite: build first, then open the PR at step 6, titled `feat(<slug>): <name>`, with\n"
+                 "   `Closes #<n>` (the feature's issue) in the body.")
+    else:
+        claim = ("2. Push and open a **draft PR** titled `feat(<slug>): <name>` right away. The draft is your claim. Put\n"
+                 "   `Closes #<n>` (the feature's issue) and your worker name in the body. Mark it ready at step 6.")
+    text = text.replace("__CLAIM__", claim)
     text += (parts / f"agents-{profile}.md").read_text()
     if size == "lite":
         text += (parts / "agents-lite.md").read_text()
@@ -40,7 +51,7 @@ def render_agents(profile: str, size: str) -> str:
 
 def render_config(profile: str, size: str) -> str:
     return ((TEMPLATE / "common/.agents/config.toml").read_text()
-            .replace("__PROFILE__", profile).replace("__SIZE__", size)
+            .replace("__SCHEMA__", str(SCHEMA)).replace("__PROFILE__", profile).replace("__SIZE__", size)
             .replace("__OPEN__", '"NOW.md"' if profile == "project" else "")
             .replace("__PARALLEL__", "1" if size == "lite" else "3"))
 
@@ -75,10 +86,26 @@ def enable_hook(target: Path) -> str:
     return "pre-commit hook on" if r.returncode == 0 else f"hook not enabled: {r.stderr.strip()}"
 
 
-def install(target: Path, profile: str, size: str | None, overwrite_agents: bool) -> list[str]:
+def schema_problem(target: Path, old: dict | None, upgrade: bool) -> str | None:
+    """Why the install must stop before touching anything, or None."""
+    if (target / "kit.toml").exists():
+        return ("this project uses the v0.1 layout (kit.toml). Follow \"From a v0.1 install\" in docs/upgrading.md "
+                "first; it ends by running this installer.")
+    have = (old or {}).get("schema", 2) if old is not None else SCHEMA
+    if have < SCHEMA and not upgrade:
+        return (f"this project uses schema {have}; this kit writes schema {SCHEMA}. Follow \"From schema {have}\" in "
+                "docs/upgrading.md, then re-run with --upgrade.")
+    if have > SCHEMA:
+        return f"this project uses schema {have}, newer than this kit ({SCHEMA}): update your copy of the kit."
+    return None
+
+
+def install(target: Path, profile: str, size: str | None, overwrite_agents: bool, upgrade: bool = False) -> list[str]:
     log: list[str] = []
     config = target / ".agents/config.toml"
     old = tomllib.loads(config.read_text()) if config.is_file() else None
+    if problem := schema_problem(target, old, upgrade):
+        raise SystemExit(f"install: stopped: {problem}")
     size = size or (old or {}).get("size", "full")
 
     for src, rel in template_files(profile):
@@ -97,6 +124,16 @@ def install(target: Path, profile: str, size: str | None, overwrite_agents: bool
         text = re.sub(r'(?m)^size\s*=\s*"[^"]*"', f'size = "{size}"', text)
         config.write_text(text)
         log.append(f"switched .agents/config.toml to {profile}/{size} (was {old.get('profile')}/{old.get('size')})")
+    if old is not None and old.get("schema", 2) < SCHEMA:
+        text = config.read_text()
+        if re.search(r"(?m)^schema\s*=", text):
+            text = re.sub(r"(?m)^schema\s*=.*$", f"schema = {SCHEMA}", text)
+        else:
+            text = f"schema = {SCHEMA}\n" + text
+        config.write_text(text)
+        log.append(f"stamped .agents/config.toml with schema = {SCHEMA}")
+    if (target / "specs/gates.toml").exists():
+        log.append("specs/gates.toml is no longer read: move its deadlines into specs/milestones.toml and delete it")
 
     agents = target / "AGENTS.md"
     if not agents.exists() or overwrite_agents:
@@ -113,7 +150,7 @@ def install(target: Path, profile: str, size: str | None, overwrite_agents: bool
 
     gi = target / ".gitignore"
     lines = gi.read_text().splitlines() if gi.exists() else []
-    missing = [x for x in (".env", ".env.*") if x not in lines]
+    missing = [x for x in (".env", ".env.*", "__pycache__/") if x not in lines]
     if missing:
         gi.write_text("\n".join(lines + missing) + "\n")
         log.append(f"added {', '.join(missing)} to .gitignore")
@@ -132,6 +169,7 @@ def main(argv=None) -> int:
     size.add_argument("--lite", dest="size", action="store_const", const="lite", help="one agent, least ceremony")
     size.add_argument("--full", dest="size", action="store_const", const="full", help="parallel agents (default)")
     ap.add_argument("--overwrite-agents", action="store_true", help="regenerate AGENTS.md even if it exists")
+    ap.add_argument("--upgrade", action="store_true", help="the upgrade steps are done: refresh and stamp the schema")
     args = ap.parse_args(argv)
     target = Path(args.target).expanduser().resolve()
     if not target.is_dir():
@@ -140,10 +178,13 @@ def main(argv=None) -> int:
     if target == KIT:
         print("install: that's the kit itself; pass your project's folder")
         return 2
-    for line in install(target, args.profile, args.size, args.overwrite_agents):
+    for line in install(target, args.profile, args.size, args.overwrite_agents, args.upgrade):
         print(f"install: {line}")
-    nxt = "NOW.md and specs/mission.md" if args.profile == "project" else "specs/mission.md, then set run_start in specs/gates.toml"
-    print(f"install: done. Next: fill in {nxt}; push; make `ci` a required check on main.")
+    nxt = "NOW.md and specs/mission.md" if args.profile == "project" else "specs/mission.md, then set start in specs/milestones.toml"
+    print(f"install: done. Next: fill in {nxt}; push; make `ci` a required check on main:")
+    print('install:   gh api -X PUT repos/{owner}/{repo}/branches/main/protection --input - <<< '
+          '\'{"required_status_checks":{"strict":false,"contexts":["ci"]},"enforce_admins":false,'
+          '"required_pull_request_reviews":null,"restrictions":null}\'')
     return 0
 
 

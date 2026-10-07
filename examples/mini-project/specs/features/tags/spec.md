@@ -1,13 +1,10 @@
 ---
-id: F03
 name: Tags
-phase: 2
-depends_on: [F01]
+depends_on: [add-list]
 owns: [jotter/tags.py, tests/test_tags]
-cut: ok
 ---
 
-# F03 Tags
+# Tags
 `add "text" --tag work`, then `list --tag work`.
 
 ## Defaults

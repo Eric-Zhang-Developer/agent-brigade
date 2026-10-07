@@ -8,9 +8,9 @@
 ## Layout
 ```
 wordfreq/__init__.py   [frozen] public API: count(text) -> dict, top(counts, n) -> list
-wordfreq/tokenize.py   F01
-wordfreq/rank.py       F02
-wordfreq/__main__.py   F03
+wordfreq/tokenize.py   tokenize
+wordfreq/rank.py       rank
+wordfreq/__main__.py   cli
 tests/golden/          [frozen] the worked example
 ```
 

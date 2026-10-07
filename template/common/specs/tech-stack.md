@@ -1,6 +1,6 @@
 # Tech stack
 
-<!-- Pin choices before the run; new dependencies only through a [C<n>] contract PR. -->
+<!-- Pin choices before the run; new dependencies only through a `contract:` PR. -->
 
 | Layer | Choice |
 |---|---|

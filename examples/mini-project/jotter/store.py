@@ -1,4 +1,4 @@
-"""Frozen storage contract (F00): JSON Lines, one note per line, append-only."""
+"""Frozen storage contract (bootstrap): JSON Lines, one note per line, append-only."""
 
 import json
 from datetime import datetime, timezone

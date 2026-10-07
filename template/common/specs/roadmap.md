@@ -1,21 +1,16 @@
 # Roadmap
 
-<!-- A feature is done when changes/<ID>.md is on main. Keep the backlog at about 2x what agents can finish. -->
+<!-- The why and the shape of the plan, for people. What ships when, and in what order, lives in
+specs/milestones.toml; each feature is a folder in specs/features/. Keep the scheduled work at about 2x what agents
+can finish before the next milestone. -->
 
-## Stages
-<!-- Stage the ambition so the big idea never risks the safe one. Hackathon example:
-R0 trust the result (safe demo by a fixed hour) · R1 competition core · R2 ambitious target ·
-R3 one stretch picked at a set hour · R4+ after the event. Project: one stage per milestone (milestones.toml). -->
+## Where this is going
+<!-- 3–5 lines: the end state, and what each milestone proves on the way there. -->
 
-| Stage | Goal | Must be true by |
-|---|---|---|
-| R0 | | |
-
-## Features
-
-| ID | Name | Depends on | Stage | Assigned to |
-|---|---|---|---|---|
-| F00 | Bootstrap (skeleton, contracts, CI) | | R0 | |
+## Milestones
+<!-- One line per milestone in milestones.toml: what's true when it ships. Hackathon: stage the ambition so the big
+idea never risks the safe one (safe demo, core, ambitious target, one stretch). -->
+-
 
 ## Not doing
 -

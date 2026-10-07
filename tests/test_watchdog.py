@@ -50,9 +50,9 @@ class Dog(helpers.RepoCase):
 
     def test_claims(self):
         now = datetime(2026, 10, 10, 12, 0, tzinfo=timezone.utc)
-        prs = [{"number": 1, "title": "[F01] a", "updatedAt": "2026-10-10T10:30:00Z"},
-               {"number": 2, "title": "[F02] b", "updatedAt": "2026-10-10T11:10:00Z"},
-               {"number": 3, "title": "[F03] c", "updatedAt": "2026-10-10T11:50:00Z"}]
+        prs = [{"number": 1, "title": "feat(a): a", "updatedAt": "2026-10-10T10:30:00Z"},
+               {"number": 2, "title": "feat(b): b", "updatedAt": "2026-10-10T11:10:00Z"},
+               {"number": 3, "title": "feat(c): c", "updatedAt": "2026-10-10T11:50:00Z"}]
         d, out = self.dog(), io.StringIO()
         with mock.patch.object(watchdog, "gh_json", return_value=prs), redirect_stdout(out):
             d.check_claims(now)

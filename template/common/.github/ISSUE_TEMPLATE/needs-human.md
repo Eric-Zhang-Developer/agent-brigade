@@ -4,7 +4,7 @@ about: A judgment call an agent shouldn't settle alone
 labels: needs-human
 ---
 
-**Feature:** <!-- F<n> -->
+**Feature:** <!-- its slug, or none -->
 
 **Context:** <!-- 2-4 lines, with links -->
 

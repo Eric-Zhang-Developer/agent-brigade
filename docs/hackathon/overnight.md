@@ -11,19 +11,19 @@ the weekend around them.
 | Launch | Bootstrap feature first. Everything else waits for its done note. | One agent |
 | The long middle | The loop. The planner keeps the backlog at 2×. Demo early to mentors/sponsors, and write their feedback into `specs/context/`. | Agents; humans at checkpoints |
 | Freeze − 3 h | Judge review (`judge-agent.md`) and briefing (`docs/briefing.md`). Fix only what they find. | Judge, briefer |
-| Freeze | No new features. FIX and REVERT only. | Gate (CI) |
+| Freeze | No new features. Fixes and reverts only. | CI |
 | Freeze → submit | `verify_release.py` against prod, `demo_snapshot.py`, rehearse the pitch (`pitch.md`), submit early. | Demo + deploy owners |
 
-## Gates (enforced by `check_gates.py` in CI)
-`specs/gates.toml` sets `run_start` and the gates. Scale every `at` to your event: a 24-hour event isn't a
-36-hour one. The template's defaults assume 36 hours:
-- `only` at 0:00: bootstrap only.
-- `no_new_phase` at about 55%: nothing new from the late phases starts.
-- `freeze` at about 85%: no new features.
-- `report` near the end: the reporter writes `reports/final.md` and commits `STOP`.
-- `hard_stop`: nothing merges.
+## Milestones (enforced by `check_gates.py` in CI)
+`specs/milestones.toml` sets `start` and the milestones as offsets from it. Scale them to your event: a 24-hour
+event isn't a 36-hour one. The template's defaults assume 36 hours:
+- The bootstrap feature merges first. Nothing else can merge before its done note: a built-in rule.
+- `safe-demo` (+12:00) and `core` (+24:00): list features in priority order; agents take them top to bottom. Put
+  late ideas in a later milestone, or on a cut list, so they don't start late.
+- `submission` (+35:30), the final milestone: `freeze` from +30:00 (no new features), `report_before` from +34:00
+  (the reporter writes `reports/final.md` and commits `STOP`), and at ship nothing merges.
 
-The gate is a CI failure, not a reminder. At ShellHacks, an untested 1,191-line feature merged four minutes
+The freeze is a CI failure, not a reminder. At ShellHacks, an untested 1,191-line feature merged four minutes
 before the deadline and had to be reverted with a minute to spare. With a freeze, that PR can't merge.
 
 ## Every 30 minutes (the reporter, or just CI)
@@ -33,16 +33,16 @@ before the deadline and had to be reverted with a minute to spare. With a freeze
 3. Backlog low? Run the planner (`docs/planner.md`).
 
 ## Checkpoints for humans (the goal is hours apart, not minutes)
-Read the pinned Status issue → clear the `needs-human` issues → merge or trim the `[PLAN]` PR → check `main` is green →
+Read the pinned Status issue → clear the `needs-human` issues → merge or trim the `plan:` PR → check `main` is green →
 go back to sleep. If you find yourself checking more often than that, the specs or the planner need work, not more
 babysitting.
 
 ## Escape hatches
 | Snag | Do this |
 |---|---|
-| Need a shared field or file | Issue labelled `contract-change`; the contract owner ships an additive `[C<n>]`. Keep working on something else. |
-| Bug found after merge | `[FIX-<ID>]` PR. At ShellHacks, 114 of 307 commits were fixes. That's normal. |
-| `main` red | The watchdog opens a `main-red` issue. The owner gets 20 minutes, then anyone may `[REVERT-<sha>]`. |
+| Need a shared field or file | Issue labelled `contract-change`; the contract owner ships an additive `contract:` PR. Keep working on something else. |
+| Bug found after merge | `fix(<slug>): ...` PR. At ShellHacks, 114 of 307 commits were fixes. That's normal. |
+| `main` red | The watchdog opens a `main-red` issue. The owner gets 20 minutes, then anyone may `git revert` it (`revert: ...`). |
 | Spec silent | Take the default, log a decision, move on. |
 | A rule turns out too strict to finish | Change it in the open with a decision record (for example, add labelled confidence tiers), never quietly. |
 | Agent stuck or dead | The watchdog restarts it; the spec on `main` carries the context. |

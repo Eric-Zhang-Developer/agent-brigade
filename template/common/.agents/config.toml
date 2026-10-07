@@ -1,14 +1,15 @@
 # Settings for the scripts in .agents/scripts. Every key is optional; the defaults are shown.
+schema = __SCHEMA__                       # layout version; the installer compares it on upgrade. Don't edit.
 profile = "__PROFILE__"          # hackathon | project
 size = "__SIZE__"                # lite (one agent) | full (parallel agents)
 
 [paths]
 specs = "specs"
-changes = "changes"              # done notes: changes/<ID>.md
+changes = "changes"              # done notes: changes/<slug>.md
 reports = "reports"              # deploy receipts, final report
 
 [ownership]
-# Only [C<n>] PRs may change these path prefixes.
+# Only `contract:` PRs may change these path prefixes.
 frozen = ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"]
 # Any PR may change these.
 open = [__OPEN__]

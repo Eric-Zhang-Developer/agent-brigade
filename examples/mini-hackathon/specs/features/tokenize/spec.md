@@ -1,15 +1,11 @@
 ---
-id: F01
 name: Tokenize
-lane: A
-agent: codex-1
-phase: 1
-depends_on: [F00]
+depends_on: [bootstrap]
 owns: [wordfreq/tokenize.py, tests/test_tokenize]
-cut: never
+assignee: codex-1
 ---
 
-# F01 Tokenize
+# Tokenize
 
 ## Requirements
 - `words(text) -> list[str]`: lowercase, then every maximal run of `a`–`z` (mission rule). Digits and punctuation
@@ -19,4 +15,4 @@ cut: never
 `tests/test_tokenize.py`: apostrophes, digits, empty input, uppercase.
 
 ## Defaults
-Non-ASCII letters are separators (logged in `decisions/F01-ascii.md`).
+Non-ASCII letters are separators (logged in `decisions/tokenize-ascii.md`).

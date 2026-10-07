@@ -1,4 +1,5 @@
-<!-- Title: [F<n>] name · [FIX-F<n>] · [C<n>] · [PLAN] · [REVERT-<sha>] -->
+<!-- Title: feat(<slug>): ... · fix(<slug>): ... or fix: ... (also refactor, perf, test, chore, style) · docs: ...
+· contract: ... · plan: ... · revert: ... -->
 
 Closes #<!-- the feature's issue -->
 
@@ -7,7 +8,7 @@ Closes #<!-- the feature's issue -->
 ## Checks
 - Spec validation: <!-- paste output or link -->
 - CI on this exact revision: <!-- link -->
-- Done note `changes/<ID>.md` written last (feature PRs only)
+- Done note `changes/<slug>.md` written last (feat PRs only)
 
 ## Honest status
 <!-- Merged is not the same as verified live or tried by a user. List anything not done, untested or unknown. -->

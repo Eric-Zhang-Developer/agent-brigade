@@ -25,9 +25,9 @@ def write(root: Path, files: dict[str, str]) -> None:
         p.write_text(text)
 
 
-def spec(fid: str, owns: list[str], depends_on=(), phase=1, extra="") -> str:
-    return (f"---\nid: {fid}\nname: Feature {fid}\nphase: {phase}\ndepends_on: [{', '.join(depends_on)}]\n"
-            f"owns: [{', '.join(owns)}]\ncut: ok\n{extra}---\n\n# {fid}\n")
+def spec(owns: list[str], depends_on=(), extra="", name="A feature") -> str:
+    return (f"---\nname: {name}\ndepends_on: [{', '.join(depends_on)}]\nowns: [{', '.join(owns)}]\n{extra}---\n\n"
+            f"# {name}\n")
 
 
 class RepoCase(unittest.TestCase):

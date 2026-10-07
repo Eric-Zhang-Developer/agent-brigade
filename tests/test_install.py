@@ -43,9 +43,9 @@ class Install(unittest.TestCase):
         self.assertLess(time.monotonic() - start, 10)
         files = tracked_files(self.root)
         installed = [f for f in files if f not in ("app.py", ".gitignore")]
-        self.assertLessEqual(len(installed), 24, installed)
+        self.assertLessEqual(len(installed), 25, installed)  # v0.3 added ship.py
         for rel in ("AGENTS.md", "CLAUDE.md", "NOW.md", ".agents/config.toml", ".agents/hooks/pre-commit",
-                    ".agents/scripts/sync_issues.py", "specs/milestones.toml", ".github/workflows/ci.yml",
+                    ".agents/scripts/sync_issues.py", ".agents/scripts/ship.py", "specs/milestones.toml", ".github/workflows/ci.yml",
                     ".github/ISSUE_TEMPLATE/needs-human.md", "changes/.gitkeep", "app.py"):
             self.assertIn(rel, files)
         for absent in (".agents/scripts/verify_release.py", "specs/gates.toml", "README.md", "docs", "examples"):
@@ -61,22 +61,30 @@ class Install(unittest.TestCase):
         agents = (self.root / "AGENTS.md").read_text()
         self.assertIn("## Project rules", agents)
         self.assertIn("## Lite mode", agents)
-        self.assertNotIn("__PROFILE", agents)
+        self.assertIn("No claim in lite", agents)
+        self.assertNotIn("draft PR", agents)
+        self.assertNotIn("__", agents)
+        self.assertEqual(cfg["schema"], 3)
+        self.assertIn("__pycache__/", (self.root / ".gitignore").read_text().splitlines())
         self.assertEqual(helpers.sh(self.root, "git", "config", "core.hooksPath").strip(), ".agents/hooks")
         # the installed scripts run in place
         self.assertEqual(script(self.root, "check_ownership.py", "--lint-specs").returncode, 0)
         self.assertEqual(script(self.root, "status.py", "--offline", "--out", "-").returncode, 0)
 
-    def test_hackathon_full_gets_release_scripts_and_gates(self):
+    def test_hackathon_full_gets_release_scripts_and_milestones(self):
         r = install(self.root, "--profile", "hackathon", "--full")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         files = tracked_files(self.root)
-        for rel in (".agents/scripts/verify_release.py", ".agents/scripts/demo_snapshot.py", "specs/gates.toml",
+        for rel in (".agents/scripts/verify_release.py", ".agents/scripts/demo_snapshot.py", "specs/milestones.toml",
                     "specs/context/.gitkeep"):
             self.assertIn(rel, files)
         self.assertNotIn("NOW.md", files)
-        self.assertIn("## Hackathon rules", (self.root / "AGENTS.md").read_text())
-        self.assertNotIn("## Lite mode", (self.root / "AGENTS.md").read_text())
+        self.assertNotIn("specs/gates.toml", files)
+        self.assertIn('start = ""', (self.root / "specs/milestones.toml").read_text())
+        agents = (self.root / "AGENTS.md").read_text()
+        self.assertIn("## Hackathon rules", agents)
+        self.assertIn("**draft PR**", agents)
+        self.assertNotIn("## Lite mode", agents)
         self.assertEqual(script(self.root, "check_ownership.py", "--lint-specs").returncode, 0)
 
     def test_rerun_refreshes_scripts_keeps_edits_and_switches_profile(self):
@@ -106,6 +114,34 @@ class Install(unittest.TestCase):
         (self.root / "specs/review-paths.toml").write_text('[[path]]\nprefix = "db/"\nowners = ["@me"]\nwhy = "schema"\n')
         install(self.root, "--profile", "project")
         self.assertIn("/db/ @me", (self.root / ".github/CODEOWNERS").read_text())
+
+    def test_older_schema_stops_until_upgrade(self):
+        install(self.root, "--profile", "project", "--lite")
+        cfg = self.root / ".agents/config.toml"
+        cfg.write_text(cfg.read_text().replace("schema = 3", "").replace("# layout version", "# was"))
+        (self.root / ".agents/scripts/lib.py").write_text("# stale\n")
+        r = install(self.root, "--profile", "project")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn('Follow "From schema 2"', r.stdout + r.stderr)
+        self.assertEqual((self.root / ".agents/scripts/lib.py").read_text(), "# stale\n")   # nothing touched
+        r = install(self.root, "--profile", "project", "--upgrade")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("stamped .agents/config.toml with schema = 3", r.stdout)
+        self.assertEqual(tomllib.loads(cfg.read_text())["schema"], 3)
+        self.assertIn("refreshed .agents/scripts/lib.py", r.stdout)
+
+    def test_upgrade_flags_a_leftover_gates_file(self):
+        install(self.root, "--profile", "hackathon")
+        (self.root / "specs/gates.toml").write_text('run_start = ""\n')
+        r = install(self.root, "--profile", "hackathon")
+        self.assertIn("specs/gates.toml is no longer read", r.stdout)
+
+    def test_v01_layout_stops(self):
+        (self.root / "kit.toml").write_text('profile = "project"\n')
+        r = install(self.root, "--profile", "project")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("From a v0.1 install", r.stdout + r.stderr)
+        self.assertFalse((self.root / "AGENTS.md").exists())
 
     def test_refuses_to_install_into_the_kit(self):
         r = install(helpers.KIT, "--profile", "project")
