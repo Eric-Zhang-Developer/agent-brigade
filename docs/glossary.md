@@ -15,19 +15,20 @@ Every term the kit uses, in one line each.
 | Bootstrap | The one feature that builds the skeleton, contracts and CI. Everything else waits for it. |
 | Claim | A draft PR titled `[<ID>] name`. It means "I'm on this"; there's no other signup. |
 | Worktree | A separate checkout of the same repo (`git worktree add`), so agents don't trip over each other. |
-| Done note | `changes/<ID>.md`, 3–8 lines, written last. The only thing that marks a feature done. |
+| Done note | `changes/<ID>.md`, 3–8 lines, written last. The only thing that marks a feature done (its issue then closes). |
 | Decision record | `specs/decisions/<ID>-<slug>.md`: context, options, choice, how to undo. |
 | Default | What an agent does when the spec is silent: the smaller, reversible option, logged. |
-| Inbox | `specs/inbox/`: one file per judgment call a human should see. Cleared at checkpoints. |
+| `needs-human` issue | A judgment call an agent filed as a GitHub issue, with the default it took (or none, for a one-way door). Cleared at checkpoints. |
+| Status issue | One pinned GitHub issue, rewritten after every merge: done, in progress, ready, blocked, needs human. |
 | One-way door | A decision that's expensive to undo (schema, auth, data model, public API). Agents never take a default on one. |
-| Checkpoint | A moment a human checks in: reads the status, clears the inbox, approves the planner's batch. |
+| Checkpoint | A moment a human checks in: reads the Status issue, clears the `needs-human` issues, approves the planner's batch. |
 | Planner | The agent role that drafts new feature specs into a `[PLAN]` PR, keeping the backlog full. |
-| Reporter | The agent role that writes `reports/status.md` on a schedule. |
+| Reporter | The agent role that writes the Status issue on a schedule. |
 | Gate | A time rule from `gates.toml` (hackathon) or `milestones.toml` (project), enforced in CI. |
 | Freeze | A gate after which no new feature work merges; only fixes and reverts. |
 | Golden test | A test built from a known worked example (often the sponsor's), so the core math can never silently drift. |
 | `main` red | The latest CI run on `main` failed. Nobody merges except the fix. |
-| Heartbeat | A file each agent touches every loop. If it goes quiet, the watchdog restarts that session. |
+| Heartbeat | A file each agent touches every loop, inside the repo's git folder so every worktree shares it. If it goes quiet, the watchdog restarts that session. |
 | Lite / full | The size dial: one agent with minimal ceremony, or parallel agents with lanes and claims. |
 | Lane | A group of related features (data, app, quality) owned by the same agents. Full size only. |
 | Briefing | `docs/briefing.md`: one page on the problem, architecture, honest numbers and what changed. |

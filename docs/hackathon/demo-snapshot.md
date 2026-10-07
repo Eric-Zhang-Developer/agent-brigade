@@ -9,8 +9,8 @@ on screen.
    `SNAPSHOT=1` (or a `?snapshot` query), read from a static folder instead of the backend.
 2. On every release, save the responses the core demo loop needs:
    ```bash
-   # kit.toml [release] snapshot_paths = ["/", "/api/items", "/api/items/featured"]
-   python3 core/scripts/demo_snapshot.py --out public/snapshot
+   # .agents/config.toml [release] snapshot_paths = ["/", "/api/items", "/api/items/featured"]
+   python3 .agents/scripts/demo_snapshot.py --out public/snapshot
    ```
    This writes each response plus `manifest.json` (source URL, commit, time, checksums). Commit it in a
    `[FIX-]` or release PR, so the snapshot always matches a reviewed commit.

@@ -24,50 +24,61 @@ racing a hackathon deadline or trying to finally finish a side project.
 | **hackathon**: a deadline, gates, an unbreakable demo | Solo hacker | A team of 2–4, agents running overnight |
 | **project**: continuity, `NOW.md`, milestones, one-way doors | Weekend side project | Side project with agents working while you sleep or are in class |
 
-You can switch later (`core/docs/upgrading.md`), including turning a hackathon prototype into a maintained project.
+You can switch later ([upgrading](docs/upgrading.md)), including turning a hackathon prototype into a maintained project.
 
 ## Quickstart (5 minutes)
 
 ```bash
-npx degit Eric-Zhang-Developer/agent-brigade my-project    # or GitHub: "Use this template"
-cd my-project && git init -b main
-python3 core/scripts/init.py --profile hackathon --full    # or: --profile project --lite
+git clone https://github.com/Eric-Zhang-Developer/agent-brigade ~/tools/agent-brigade   # once
+python3 ~/tools/agent-brigade/install.py --profile hackathon --full ~/code/my-project     # or: --profile project --lite
 ```
-Needs Python 3.11+ and git; `gh` is optional. Then:
+Works on a new or an existing repo. Needs Python 3.11+ and git; `gh` turns on issues. The project gets about 20
+neutral files (`AGENTS.md`, `.agents/`, `specs/`, CI and GitHub templates) and nothing that names this kit. Then:
 1. Fill in `specs/mission.md`, `tech-stack.md`, `roadmap.md`, and one spec per feature (copy
-   `specs/features/_template/`). Hackathon: run the [plan bake-off](profiles/hackathon/plan-bakeoff.md) first.
-2. Push, and protect `main` with the required `ci` check ([preflight](profiles/hackathon/preflight.md)).
+   `specs/features/_template/`). Hackathon: run the [plan bake-off](docs/hackathon/plan-bakeoff.md) first.
+2. Push. The first push to `main` creates the labels, one issue per feature, and a pinned **Status** issue. Make
+   `ci` a required check ([preflight](docs/hackathon/preflight.md)).
 3. Start each agent with: *"Read AGENTS.md and follow it exactly. Your worker name is `<name>`. Pick your next ready
    feature and never wait for a human."*
-4. Check in at checkpoints: `python3 core/scripts/status_report.py`, clear `specs/inbox/`, merge the planner's
-   `[PLAN]` PR.
+4. Check in at checkpoints, in **one place, GitHub Issues**: filter `needs-human`, read the pinned Status, and merge
+   or trim the planner's `[PLAN]` PR.
 
-Full walkthrough: [core/docs/quickstart.md](core/docs/quickstart.md).
+Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 
-## What's inside
+## How it works
+
+- **Specs are the source of truth.** `specs/` holds the mission, the stack, the roadmap and one spec per feature,
+  versioned with the code. Agents reload them every run.
+- **Issues are the human's view.** Each feature spec gets an issue (a link, never a copy) that closes when the
+  feature is done. Agents file `needs-human` issues for judgment calls, and take no default on `one-way-door` ones.
+  The watchdog files `main-red`.
+- **The loop** (in the installed [AGENTS.md](template/parts/agents-common.md)): claim with a draft PR, build in a
+  worktree, pass CI, write a done note, merge. **Must** rules are enforced by checks (ownership, a green `main`, the
+  freeze, no conflict markers or secrets). **Prefer** rules are engineering judgment (PR size, splitting along seams).
+
+## What's in this repo
 
 | Path | What |
 |---|---|
-| `AGENTS.md` | Rules every agent loads first |
-| `kit.toml` | Profile, size, paths, frozen paths, PR cap, watchdog, release, budget ([reference](core/docs/config.md)) |
-| `core/docs/` | [The method](core/docs/method.md) (the loop), [quickstart](core/docs/quickstart.md), [glossary](core/docs/glossary.md), [roles](core/docs/roles.md), [planner](core/docs/planner.md), [briefing](core/docs/briefing.md), [budget](core/docs/budget.md), [remote mode](core/docs/remote.md), [upgrading](core/docs/upgrading.md), [integrations](core/docs/integrations/) |
-| `core/specs/` | Templates: mission, tech stack, roadmap, feature spec, decision, inbox |
-| `core/scripts/` | `init` · `check_ownership` · `check_markers` · `check_gates` · `status_report` · `watchdog` · `verify_release` · `demo_snapshot`. All have `--help` and tests |
-| `core/ci/`, `core/hooks/` | The CI workflow and PR template init installs; the pre-commit hook (same checks, for humans too) |
-| `profiles/hackathon/` | [Overnight run](profiles/hackathon/overnight.md), [preflight](profiles/hackathon/preflight.md), `gates.toml`, [plan bake-off](profiles/hackathon/plan-bakeoff.md), [judge agent](profiles/hackathon/judge-agent.md), [demo snapshot](profiles/hackathon/demo-snapshot.md), [pitch](profiles/hackathon/pitch.md) |
-| `profiles/project/` | `NOW.md`, [one-way doors](profiles/project/one-way-doors.md), `milestones.toml`, `review-paths.toml`, [weekly routine](profiles/project/weekly.md), [budget](profiles/project/budget.md) |
+| `install.py` | Installs into a project, or switches its profile/size later |
+| `template/` | Exactly what gets installed: `common/` plus one profile overlay, and `parts/` that become `AGENTS.md` |
+| `template/common/.agents/scripts/` | `check_ownership` · `check_markers` · `check_gates` · `status` · `sync_issues` · `watchdog` (+ `verify_release` · `demo_snapshot` for hackathons). Stdlib Python, all tested |
+| `docs/` | Guides for people, never installed: [quickstart](docs/quickstart.md), [config reference](docs/config.md), [glossary](docs/glossary.md), [roles](docs/roles.md), [planner](docs/planner.md), [briefing](docs/briefing.md), [budget](docs/budget.md), [remote mode](docs/remote.md), [upgrading](docs/upgrading.md), [integrations](docs/integrations/) |
+| `docs/hackathon/` | [Overnight run](docs/hackathon/overnight.md), [preflight](docs/hackathon/preflight.md), [plan bake-off](docs/hackathon/plan-bakeoff.md), [judge agent](docs/hackathon/judge-agent.md), [demo snapshot](docs/hackathon/demo-snapshot.md), [pitch](docs/hackathon/pitch.md) |
+| `docs/project/` | [One-way doors](docs/project/one-way-doors.md), [weekly routine](docs/project/weekly.md), [budget](docs/project/budget.md) |
 | `examples/` | [mini-hackathon](examples/mini-hackathon/) and [mini-project](examples/mini-project/): toy projects whose tests replay the loop against the real checks |
 
 ## What each failure turned into
 
 | At ShellHacks | In the kit |
 |---|---|
-| Agents ran out of work every 10–30 min | The planner drafts the next batch into a `[PLAN]` PR, and blocked agents switch tasks |
+| Agents ran out of work every 10–30 min | The planner drafts the next batch into a `[PLAN]` PR, and blocked agents file an issue and switch tasks |
 | Sessions died; laptops ran out of RAM and disk | `watchdog.py` (heartbeats, restarts, resource alerts) + remote mode |
 | A human merged conflict markers into `main` | `check_markers.py` in the pre-commit hook **and** CI, plus `enforce_admins` |
-| An untested 1,191-line feature merged 4 min before the deadline | `check_gates.py`: an enforced freeze and a PR size cap that tightens |
+| An untested 1,191-line feature merged 4 min before the deadline | `check_gates.py`: a freeze enforced in CI |
 | The live demo throttled on a free-tier database | Production load test in preflight, `demo_snapshot.py`, `verify_release.py` |
 | The team couldn't explain the code to judges | A briefing and judge agent scheduled hours before judging |
+| What needed a human was scattered | GitHub Issues: `needs-human`, `one-way-door`, `main-red`, and a pinned Status |
 
 ## Bringing it to a hackathon
 

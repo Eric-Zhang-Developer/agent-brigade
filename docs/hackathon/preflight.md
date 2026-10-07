@@ -32,13 +32,13 @@ hook still catch most mistakes, and the rule is social.
 ## 3. Every machine
 ```bash
 python3 --version && git --version && gh auth status      # Python 3.11+
-git config core.hooksPath core/hooks                       # init.py did this on the first machine; do it on every clone
+git config core.hooksPath .agents/hooks                    # the installer did this on the first machine; do it on every clone
 df -h . && echo "free disk: keep 20 GB+"                   # agents, worktrees and builds eat disk
 ```
 - Decide how many agents each machine can carry (`[agents].max_parallel`). A 16 GB laptop: 2–3, with the browser
-  closed. More agents than that: use `core/docs/remote.md`.
+  closed. More agents than that: use `docs/remote.md`.
 - Log in to each agent tool. Check your usage limits and reset times, and write them into the plan
-  (`core/docs/budget.md`).
+  (`docs/budget.md`).
 
 ## 4. Secrets
 | Secret | Where it goes | Never |
@@ -54,13 +54,13 @@ The database and host you demo on are a decision to make now, not mid-run.
 - [ ] Deploy a "hello" build to the real host and check it loads on venue Wi-Fi and a phone hotspot.
 - [ ] **Load-test the real backend** with the payload the demo will load: time the first load cold, then hit it
       20 times in a row. Free tiers throttle connections and requests. If it's slow or flaky, change plans now.
-- [ ] Add the health endpoint (`{"commit": "<sha>"}`, `core/docs/config.md`) and set `[release]` in `kit.toml`.
+- [ ] Add the health endpoint (`{"commit": "<sha>"}`, `docs/config.md`) and set `[release]` in `.agents/config.toml`.
 - [ ] Plan the fallback: `demo_snapshot.py` (`demo-snapshot.md`).
 
 ## 6. Launch
 1. In the launch commit, set `run_start` in `specs/gates.toml` and scale the gates to the event.
 2. Start the bootstrap agent first. Start the others after its done note lands.
-3. Start the watchdog if anyone's going to sleep (`core/docs/remote.md`).
+3. Start the watchdog if anyone's going to sleep (`docs/remote.md`).
 4. Write down who owns what:
 
 | Role | Person | Machine / agents |

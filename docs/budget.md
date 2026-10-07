@@ -14,9 +14,9 @@ Write your actual routing in `specs/tech-stack.md` (or `specs/decisions/000-defa
 use. The table above is a pattern, not a recommendation for any particular vendor.
 
 ## Rules
-- At **75%** of any budget you can see (subscription limit, API spend), start no new feature work (`method.md` §8).
+- At **75%** of any budget you can see (subscription limit, API spend), start no new feature work (`AGENTS.md`).
 - Billing alerts are not caps. Set a hard limit where your provider allows one.
 - Product API keys (the ones your app calls) are separate from coding-agent logins. Budget them separately.
 - **Hackathon:** keep `[budget].reserve_final_hours` worth of capacity for fixes, the deploy and the demo. If your
   plan has usage resets, schedule them; don't spend the last one before the freeze.
-- **Project:** set `[budget].monthly_usd` and check spend weekly (`profiles/project/budget.md`).
+- **Project:** set `[budget].monthly_usd` and check spend weekly (`docs/project/budget.md`).

@@ -2,41 +2,41 @@
 
 About five minutes of commands, then the time it takes to write a good spec.
 
-## 1. Copy the kit
+## 1. Get the kit once
 ```bash
-npx degit <owner>/agent-brigade my-project      # or GitHub: "Use this template"
-cd my-project && git init -b main
+git clone https://github.com/Eric-Zhang-Developer/agent-brigade ~/tools/agent-brigade
 ```
-You need Python 3.11+ and git. `gh` (GitHub CLI) is optional, but it makes the status report and watchdog smarter.
+Any folder works. The kit stays there; projects only get what they run. You need Python 3.11+ and git. `gh`
+(GitHub CLI) is what turns issues on.
 
-## 2. Pick a profile and size
+## 2. Install into a project (new or existing)
 | You are… | Run |
 |---|---|
-| A team at a hackathon, several agents in parallel | `python3 core/scripts/init.py --profile hackathon --full` |
-| Solo at a hackathon, one agent | `python3 core/scripts/init.py --profile hackathon --lite` |
-| A side project, one agent | `python3 core/scripts/init.py --profile project --lite` |
-| A side project, several agents while you sleep | `python3 core/scripts/init.py --profile project --full` |
+| A team at a hackathon, several agents in parallel | `python3 ~/tools/agent-brigade/install.py --profile hackathon --full ~/code/my-project` |
+| Solo at a hackathon, one agent | `... --profile hackathon --lite ~/code/my-project` |
+| A side project, one agent | `... --profile project --lite ~/code/my-project` |
+| A side project, several agents while you sleep | `... --profile project --full ~/code/my-project` |
 
-`init.py` writes `kit.toml`, copies the spec templates into `specs/`, installs CI and the pre-commit hook, and adds
-the profile's files. Re-running it never overwrites your edits.
+That writes about 20 files: `AGENTS.md`, `CLAUDE.md`, `.agents/` (settings, scripts, pre-commit hook), `specs/`
+templates, `changes/`, CI and the GitHub templates. None of them mention the kit. Re-running never overwrites
+your edits.
 
-## 3. Write the constitution (the part that matters)
-Fill in `specs/mission.md`, `specs/tech-stack.md` and `specs/roadmap.md`, then one spec per feature in
-`specs/features/F<n>-<slug>/spec.md` (copy `_template/`). An agent can draft these with you. You approve them.
-- Hackathon: run the plan bake-off first (`profiles/hackathon/plan-bakeoff.md`).
-- Project: write `NOW.md` and list your one-way doors (`profiles/project/one-way-doors.md`).
+## 3. Write the specs (the part that matters)
+Fill in `specs/mission.md`, `tech-stack.md` and `roadmap.md`, then one spec per feature in
+`specs/features/F<n>-<slug>/spec.md` (copy `_template/`). An agent can draft these with you; you approve them.
+- Hackathon: run the plan bake-off first (`docs/hackathon/plan-bakeoff.md`).
+- Project: write `NOW.md`, and list your one-way doors (`docs/project/one-way-doors.md`).
 
 ## 4. Push, protect, launch
 ```bash
-git add -A && git commit -m "Spec on main" && gh repo create --private --source . --push
+git add -A && git commit -m "Specs and agent workflow" && git push
 ```
-Then follow `profiles/hackathon/preflight.md` (branch protection, keys, load test) or, for a project, set up
-branch protection the same way. Start your agents with:
+The first push to `main` creates the labels, one issue per feature, and the pinned Status issue. Make `ci` a
+required check on `main` (`docs/hackathon/preflight.md` has the commands). Then start each agent with:
 
 > Read AGENTS.md and follow it exactly. Your worker name is `<name>`. Pick your next ready feature and never wait
 > for a human.
 
 ## 5. Check in at checkpoints, not constantly
-- `python3 core/scripts/status_report.py` tells you what's done, in progress, ready, blocked and waiting on you.
-- Clear `specs/inbox/` in one batch, and merge or trim the planner's `[PLAN]` PR.
-- `python3 core/scripts/watchdog.py` keeps the run alive while you're away (`remote.md`).
+Open the repo's **Issues**: filter `needs-human`, read the pinned **Status**, and merge or trim the planner's
+`[PLAN]` PR. `python3 .agents/scripts/watchdog.py` keeps the run alive while you're away (`docs/remote.md`).

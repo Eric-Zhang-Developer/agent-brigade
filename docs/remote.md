@@ -13,9 +13,9 @@ git clone <your repo> ~/work/app && cd ~/work/app
 ```
 1. Start each agent in its own **persistent session**, so closing your laptop doesn't kill it. `tmux` is the
    simplest: `tmux new -d -s claude-1 -c ~/work/app-f03 '<agent command>'`.
-2. Have each agent touch its heartbeat every loop. Put this in the launch prompt: "At the start of each task, run
-   `mkdir -p .agent-brigade/heartbeats && pwd > .agent-brigade/heartbeats/<worker>`."
-3. Configure `[watchdog]` in `kit.toml`:
+2. Have each agent touch its heartbeat every loop. The installed `AGENTS.md` already says to:
+   `d="$(git rev-parse --git-common-dir)/agent-heartbeats"; mkdir -p "$d"; pwd > "$d/<name>"`. It lives in the repo's git folder, so every worktree writes to the same place.
+3. Configure `[watchdog]` in `.agents/config.toml`:
    ```toml
    [watchdog]
    restart = "tmux kill-session -t {worker}; tmux new -d -s {worker} -c {worktree} '<agent resume command>'"
@@ -23,7 +23,7 @@ git clone <your repo> ~/work/app && cd ~/work/app
    ```
    The resume command depends on your agent tool (see `integrations/`). `alert` can be any command; a push
    notification service lets it reach your phone.
-4. Run the watchdog in its own session: `tmux new -d -s watchdog 'python3 core/scripts/watchdog.py'`.
+4. Run the watchdog in its own session: `tmux new -d -s watchdog 'python3 .agents/scripts/watchdog.py'`.
 
 ## Honest limits
 - The watchdog only restarts what your `restart` template knows how to restart, and it detects a dead session by

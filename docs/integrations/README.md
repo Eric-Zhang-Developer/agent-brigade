@@ -14,5 +14,5 @@ so check your tool's `--help` and docs for the exact flags in your version.
 Every tool gets the same launch prompt:
 
 > Read AGENTS.md and follow it exactly. Your worker name is `<name>`. At the start of each task, write your
-> heartbeat (`mkdir -p .agent-brigade/heartbeats && pwd > .agent-brigade/heartbeats/<name>`). Pick your next ready
+> heartbeat (`d="$(git rev-parse --git-common-dir)/agent-heartbeats"; mkdir -p "$d"; pwd > "$d/<name>"`). Pick your next ready
 > feature and never wait for a human.

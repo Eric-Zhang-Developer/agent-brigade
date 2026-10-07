@@ -5,10 +5,10 @@ decisions are expensive to undo once code and data depend on them. Agents never 
 
 ## The rule
 If your work needs one of these decided and there's no decision record for it:
-1. Write an inbox item (`specs/inbox/<ID>-<slug>.md`) with `One-way door: yes`, the options, and what each costs
+1. File a GitHub issue labelled `needs-human` and `one-way-door`, with the options and what each costs
    to reverse. Write `Default taken: none: parked`.
 2. Leave your PR as a draft with a note, and switch to your next ready feature.
-3. A human decides, writes `specs/decisions/<ID>-<slug>.md`, and deletes the inbox item.
+3. A person decides, writes `specs/decisions/<ID>-<slug>.md`, and closes the issue with a link to it.
 
 ## Always one-way doors
 - **Data model and schema:** tables, collections, primary keys, ID formats, anything persisted.

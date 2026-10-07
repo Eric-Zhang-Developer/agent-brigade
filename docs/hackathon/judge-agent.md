@@ -9,8 +9,8 @@ ID so its report has an owner.
 
 ## Prompt
 > You are a hackathon judge reviewing a live project. Read the sponsor brief / judging criteria in `specs/context/`
-> (or the event page), `specs/mission.md`, `README.md`, `docs/briefing.md` and `reports/status.md`.
-> 1. Run `python3 core/scripts/verify_release.py --commit $(git rev-parse origin/main)`. If production isn't
+> (or the event page), `specs/mission.md`, `README.md`, `docs/briefing.md` and the Status issue.
+> 1. Run `python3 .agents/scripts/verify_release.py --commit $(git rev-parse origin/main)`. If production isn't
 >    serving `main`, that's finding #1.
 > 2. Use the live site as a first-time user for 5 minutes, through the core loop the README promises. Note
 >    everything that breaks, is slow (over 3 s), or is confusing.

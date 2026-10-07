@@ -5,8 +5,8 @@ and nobody had read it. The briefing is a one-page `docs/briefing.md`, kept curr
 always understand what they've built.
 
 ## When it runs
-- Hackathon: before every demo, and as a required step hours before judging (`profiles/hackathon/overnight.md`).
-- Project: weekly, as part of `profiles/project/weekly.md`.
+- Hackathon: before every demo, and as a required step hours before judging (`docs/hackathon/overnight.md`).
+- Project: weekly, as part of `docs/project/weekly.md`.
 
 ## Prompt
 > You are the briefer. Read the constitution, `changes/`, `specs/decisions/` and the code. Rewrite

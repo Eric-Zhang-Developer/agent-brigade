@@ -19,9 +19,9 @@ minutes. The 45-second core visual loop is what won the room. Plan the pitch aro
   believable.
 - **Talk to the sponsor early.** Demo to them mid-event, write their feedback into `specs/context/`, and come back
   with it built in. They'll recognize their own words.
-- **Everyone can explain it.** Each teammate can answer "how does your part work?" (`core/docs/briefing.md`).
+- **Everyone can explain it.** Each teammate can answer "how does your part work?" (`docs/briefing.md`).
 - **Have the fallback ready** (`demo-snapshot.md`) and a recorded video of the loop.
-- **Submit early.** Write the submission text from `docs/briefing.md` and `reports/status.md` before the freeze, not
+- **Submit early.** Write the submission text from `docs/briefing.md` and the Status issue before the freeze, not
   after.
 
 ## Template

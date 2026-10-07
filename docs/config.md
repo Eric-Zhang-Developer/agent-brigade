@@ -1,173 +1,178 @@
 # Config and file formats
 
-The reference for every file the scripts read. If a doc and this file disagree, this file wins.
+The reference for every file the installed scripts read. The installed `.agents/config.toml` carries the same
+defaults as comments, so a project needs no link back here.
 
-## `kit.toml` (repo root)
+## What an install writes
+```
+AGENTS.md                     rules + the loop (from template/parts/), never overwritten once it exists
+CLAUDE.md                     @AGENTS.md
+.agents/config.toml           settings (below)
+.agents/scripts/*.py          refreshed on every re-install
+.agents/hooks/pre-commit      enabled with git config core.hooksPath .agents/hooks
+specs/                        mission, tech-stack, roadmap, features/_template, decisions/
+specs/gates.toml              hackathon        NOW.md, specs/milestones.toml, specs/review-paths.toml   project
+changes/                      done notes
+.github/workflows/ci.yml  .github/pull_request_template.md  .github/ISSUE_TEMPLATE/needs-human.md
+```
 
-Every key is optional except `profile`. The defaults are shown.
+## `.agents/config.toml`
+Every key except `profile` is optional. The defaults are shown.
 
 ```toml
 profile = "hackathon"          # hackathon | project
 size = "full"                  # lite | full
 
 [paths]
-specs = "specs"                # mission.md, tech-stack.md, roadmap.md, features/, decisions/, inbox/
-changes = "changes"            # done notes: <changes>/<ID>.md
-reports = "reports"            # status.md, deploys.md, final.md
+specs = "specs"
+changes = "changes"
+reports = "reports"            # deploy receipts, final report
 
 [ownership]
-frozen = ["AGENTS.md", "kit.toml", ".github/", "core/", "profiles/"]  # only [C<n>] PRs may change these
-open = []                      # any PR may change these (e.g. "NOW.md")
+frozen = ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"]   # only [C<n>] PRs may change these
+open = []                      # any PR may change these (project: ["NOW.md"])
 
 [agents]
-max_parallel = 3               # agents running at once on one machine
-reporter = ""                  # who writes <reports>/status.md in full size
+max_parallel = 3               # lite: 1
+reporter = ""                  # worker that refreshes the Status issue
 
 [pr]
-max_lines = 400                # added+removed lines per [F<n>] PR; 0 = no cap
-exclude = []                   # prefixes not counted (lockfiles, generated data)
+warn_lines = 400               # CI warns (never fails) above this; 0 = off
+exclude = []                   # prefixes not counted
 
 [markers]
 debug_patterns = ['^\s*debugger;?\s*$', '^\s*breakpoint\(\)', '^\s*import pdb', 'console\.log\(']
-ignore = []                    # prefixes never scanned
+ignore = []
 
 [watchdog]
-heartbeat_dir = ".agent-brigade/heartbeats"  # gitignored; one file per worker, touched every loop
-heartbeat_minutes = 20         # older heartbeat = dead session
-stale_claim_minutes = 45       # draft PR with no push: comment
-close_claim_minutes = 60       # draft PR with no push: close
-main_red_minutes = 20          # main red longer than this: alert
+heartbeat_minutes = 20
+stale_claim_minutes = 45
+close_claim_minutes = 60
+main_red_minutes = 20
 min_free_disk_gb = 10
 min_free_ram_gb = 2
-restart = ""                   # command template: {worker} {worktree}; empty = alert only
-alert = ""                     # command template: {message}; empty = print only
+restart = ""                   # shell template: {worker} {worktree}
+alert = ""                     # shell template: {message}
 
 [release]
-url = ""                       # production origin, https://...
+url = ""
 health_path = "/api/health"    # must return JSON {"commit": "<sha>"}
 smoke_paths = ["/"]
-snapshot_paths = ["/"]         # what demo_snapshot.py saves
+snapshot_paths = ["/"]
 secret_patterns = ["sk-", "sk_live_", "AIza", "ghp_", "github_pat_", "xox", "mongodb+srv://", "postgres://", "-----BEGIN"]
 
 [budget]
-monthly_usd = 0                # project profile: cap; 0 = none set
-reserve_final_hours = 3        # hackathon profile: keep this much budget for the end
+monthly_usd = 0
+reserve_final_hours = 3
 ```
 
-The kit's own development repo also sets `kit_dev = true`. `init.py` treats that as "this is a fresh copy of the
-kit": it removes `dev/` and writes a new `kit.toml`.
-
-## Feature spec front matter (`<specs>/features/<ID>-<slug>/spec.md`)
-
+## Feature spec front matter (`specs/features/<ID>-<slug>/spec.md`)
 ```yaml
 ---
 id: F03                        # F<number>, unique
 name: One line
-lane: A                        # full size only; any label
+lane: A                        # full size only
 agent: builder                 # a role or worker name
-phase: 1                       # integer; gates can block a phase
-depends_on: [F01]              # IDs that must be done first
-owns: [src/report/, tests/test_report]   # path prefixes this feature may change
+phase: 1                       # gates can block a phase
+depends_on: [F01]
+owns: [src/report/, tests/test_report]   # path prefixes, not globs; no overlaps
 cut: ok                        # ok | never
-milestone: v1                  # project profile, optional
+milestone: v1                  # project, optional
 bootstrap: false               # exactly one feature may be true; it may change anything
 ---
 ```
 
-`owns` entries are **path prefixes**, not globs: `src/report/` covers a folder, `tests/test_report` covers every
-file starting with that. No entry may be a prefix of another feature's entry or of a frozen path.
-
 ## PR titles
-
 | Prefix | Meaning | May change |
 |---|---|---|
-| `[F<n>] name` | Build feature n. A draft PR is the claim. | its `owns`, `<changes>/F<n>.md`, `<specs>/features/F<n>-*`, `<specs>/decisions/F<n>-*`, `<specs>/inbox/F<n>-*`, `open` paths |
-| `[FIX-F<n>] ...` | Repair feature n after merge | same as `[F<n>]` |
-| `[C<n>] ...` | Contract change: frozen files, additive only | `frozen` paths + `<specs>/` |
-| `[PLAN] ...` | Planner's proposed batch; a human merges it | `<specs>/features/`, `<specs>/roadmap.md`, `<specs>/inbox/` |
-| `[REVERT-<sha>] ...` | Plain `git revert` | exactly the files that commit touched |
+| `[F<n>] name` | Build feature n; a draft PR is the claim | its `owns`, `changes/F<n>.md`, `specs/features/F<n>-*`, `specs/decisions/F<n>-*`, `open` paths |
+| `[FIX-F<n>] ...` | Repair after merge | same as `[F<n>]` |
+| `[C<n>] ...` | Contract change, additive only | `frozen` paths + `specs/` |
+| `[PLAN] ...` | Planner's batch; a person merges it | `specs/features/`, `specs/roadmap.md` |
+| `[REVERT-<sha>] ...` | Plain `git revert` | exactly that commit's files |
+
+## GitHub labels (created by `sync_issues.py` on the first push to `main`)
+| Label | Filed by | Means |
+|---|---|---|
+| `feature` | `sync_issues.py` | One per feature spec; closes when `changes/<ID>.md` lands |
+| `needs-human` | agents | A judgment call: context, options, default taken, how to undo |
+| `one-way-door` | agents | With `needs-human`: expensive to undo, so no default was taken |
+| `blocked` | agents | Can't continue until something else happens |
+| `main-red` | `watchdog.py` | `main` CI red past `main_red_minutes`; closed when green |
+| `contract-change` | agents | A frozen file needs an additive change |
+| `status` | `status.py --issue` | The one pinned Status issue, rewritten after every merge |
 
 ## Other files
-
 | File | Format |
 |---|---|
-| `<changes>/<ID>.md` | Done marker, 3–8 lines: shipped, cut, known gaps. Written last. |
-| `<specs>/decisions/<ID>-<slug>.md` | Context, options, choice, how to undo. `000-*.md` = project-wide defaults. |
-| `<specs>/inbox/<ID>-<slug>.md` | One judgment call per file; see `core/specs/inbox/needs-human.md`. |
+| `changes/<ID>.md` | Done marker, 3–8 lines: shipped, cut, known gaps. Written last. |
+| `specs/decisions/<ID>-<slug>.md` | Context, options, choice, how to undo. `000-*.md` = project-wide defaults. |
 | `STOP` (repo root, on `main`) | Exists = every agent stops at its next check. |
-| `<heartbeat_dir>/<worker>` | Touched by each agent once per loop. First line: worktree path (optional). |
+| `<git common dir>/agent-heartbeats/<worker>` | Touched by each agent every loop (first line: its worktree path). Shared by all worktrees; never committed. |
 
-## `gates.toml` (hackathon, at `<specs>/gates.toml`)
-
-Only the latest gate whose time has passed applies; each one replaces the one before it.
-
+## `specs/gates.toml` (hackathon)
+Only the latest gate whose time has passed applies.
 ```toml
-run_start = "2026-10-10T09:00:00-04:00"   # must include a UTC offset; "" = gates off (set it in the launch commit)
+run_start = ""                 # "2026-10-10T09:00:00-04:00" in the launch commit; "" = gates off
 
 [[gate]]
 at = "0:00"                    # H:MM after run_start
-only = ["F00"]                 # only these IDs may run
+only = ["F00"]
 
 [[gate]]
-at = "1:00"                    # a gate with no rule is open: lifts the earlier `only`
+at = "1:00"                    # no kind = open
 
 [[gate]]
 at = "20:00"
-no_new_phase = 2               # features in phase >= 2 not started yet may not start
+no_new_phase = 3               # phase >= 3 features not started before this may not start
 
 [[gate]]
 at = "30:00"
-freeze = true                  # no [F<n>] except `allow`; FIX/REVERT/C still fine
+freeze = true                  # no [F<n>] except `allow`; FIX/REVERT/C fine
 allow = []
-max_lines = 150                # tighter PR cap from here on
 
 [[gate]]
 at = "34:00"
-report = true                  # only the reporter, FIX and REVERT
+report = true                  # only FIX, REVERT and `allow`
 
 [[gate]]
 at = "35:30"
-hard_stop = true               # nothing merges
+hard_stop = true
 ```
 
-## `milestones.toml` (project, at `<specs>/milestones.toml`)
-
+## `specs/milestones.toml` (project)
 ```toml
 [[milestone]]
 name = "v1"
-ship = "2026-11-15"            # YYYY-MM-DD, or "" for no date
-freeze_days = 3                # only this milestone's features may merge in [ship - freeze_days, ship]
+ship = "2026-11-15"            # YYYY-MM-DD, or "" for no date (no freeze)
+freeze_days = 3                # in [ship - freeze_days, ship], only `features` merge
 features = ["F01", "F02"]
 cut = ["F05"]                  # rejected once the freeze starts
 ```
 
-## `review-paths.toml` (project, at `<specs>/review-paths.toml`)
-
+## `specs/review-paths.toml` (project)
 ```toml
 [[path]]
 prefix = "db/migrations/"
 owners = ["@your-github-handle"]
 why = "schema is a one-way door"
 ```
-`init.py` turns this into `.github/CODEOWNERS`. Turn on "Require review from Code Owners" in branch protection.
+The installer turns this into `.github/CODEOWNERS`. Turn on "Require review from Code Owners" in branch protection.
 
-## Health endpoint contract (for `verify_release.py`)
-
-`GET <url><health_path>` → `200` with JSON containing `"commit": "<git sha>"` (at least 7 hex characters). Most
-hosts expose the deployed SHA as an environment variable (e.g. `VERCEL_GIT_COMMIT_SHA`).
+## Health endpoint (for `verify_release.py`)
+`GET <url><health_path>` → `200` with JSON `{"commit": "<git sha>"}`, at least 7 hex characters.
 
 ## Script CLI
-
-Every script takes `--help` and `--root PATH` (default: nearest parent directory with `kit.toml`). Exit codes:
-`0` ok, `1` findings/failure, `2` usage error.
+All scripts take `--help` and `--root PATH`. Exit codes: `0` ok, `1` findings/failure, `2` usage error.
 
 | Script | Usage |
 |---|---|
-| `init.py` | `--profile hackathon\|project [--lite\|--full]` |
+| `install.py` (kit root) | `[TARGET] --profile hackathon\|project [--lite\|--full] [--overwrite-agents]` |
 | `check_ownership.py` | `--lint-specs` · `--title T [--base REF]` |
 | `check_markers.py` | `--staged` · `--base REF` · `--all` |
 | `check_gates.py` | `--title T [--base REF] [--now ISO]` |
-| `status_report.py` | `[--out PATH] [--now ISO] [--offline]` |
+| `status.py` | `--issue` · `--out FILE\|-` · `[--offline] [--now ISO]` |
+| `sync_issues.py` | `[--dry-run]` |
 | `watchdog.py` | `[--once] [--interval SECONDS] [--dry-run]` |
-| `verify_release.py` | `--commit SHA [--url URL]` |
-| `demo_snapshot.py` | `--out DIR [--url URL]` |
+| `verify_release.py` (hackathon) | `--commit SHA [--url URL]` |
+| `demo_snapshot.py` (hackathon) | `--out DIR [--url URL]` |
