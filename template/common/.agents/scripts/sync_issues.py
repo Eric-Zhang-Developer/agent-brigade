@@ -91,7 +91,8 @@ def main(argv=None) -> int:
             if not r or r.returncode != 0:
                 failed += 1
                 print(f"sync_issues: failed: {r.stderr.strip() if r else 'no gh'}")
-    print(f"sync_issues: {len(specs)} specs, {len(actions)} change(s), {len(made)} label(s) added"
+    verb = "would add" if args.dry_run else "added"
+    print(f"sync_issues: {len(specs)} specs, {len(actions)} change(s), {verb} {len(made)} label(s)"
           f"{', ' + str(failed) + ' failed' if failed else ''}")
     return 1 if failed else 0
 

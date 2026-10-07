@@ -26,7 +26,17 @@ This adds `NOW.md`, `specs/milestones.toml` and `specs/review-paths.toml`. Then:
    CODEOWNERS.
 
 ## From a v0.1 install (the whole kit copied in)
-Delete what v0.1 copied (`core/`, `profiles/`, `examples/`, `docs/story.md`, the kit's `CHANGELOG.md`/`CONTRIBUTING.md`
-if they're the kit's), rename `kit.toml` to `.agents/config.toml` (and rename `max_lines` to `warn_lines`), and run the
-installer with `--overwrite-agents`. Turn any `specs/inbox/` files into `needs-human` issues, then delete the
-folder.
+Rehearsed on a clone of a real v0.1 project. Do it on a branch, with no other agents running:
+1. Delete what v0.1 copied: `core/`, `profiles/`, `examples/`, `docs/story.md`, and the kit's `CHANGELOG.md` and
+   `CONTRIBUTING.md`.
+2. `mkdir -p .agents && git mv kit.toml .agents/config.toml`. In it, rename `max_lines` to `warn_lines`, replace
+   `"kit.toml", "core/", "profiles/"` in `frozen` with `".agents/"`, and delete comment lines that point at `core/docs`.
+3. Move `.github/workflows/ci.yml` aside, let the installer write the new one, then copy your project's own steps
+   (tests, build) back into its "Project checks" step. Delete `.github/pull_request_template.md` if you never
+   edited it.
+4. `python3 <kit>/install.py --profile <same> --<size> --overwrite-agents .`
+5. Remove the `.agent-brigade/` line from `.gitignore`, and any "Built with" line from the README.
+6. Turn each `specs/inbox/` file into a `needs-human` issue (add `one-way-door` where it says so), then delete the
+   folder.
+7. `git grep -n -i "core/scripts\|kit.toml"` should find nothing that's yours to fix. Push, and the first CI run on
+   `main` creates the labels and issues.
