@@ -9,8 +9,9 @@ owns: []
 cut: ok
 ---
 
-<!-- Copy this folder to features/F<n>-<slug>/. owns = path prefixes this feature alone may change
-(core/docs/config.md). Keep a feature small enough to merge in under ~400 changed lines, or plan parts. -->
+<!-- Copy this folder to features/F<n>-<slug>/. owns = path prefixes (not globs) this feature alone may change;
+no entry may overlap another feature's or a frozen path. cut: ok | never. bootstrap: true on exactly one feature,
+which may change anything. Size it so it merges as one reviewable PR, or plan it in parts. -->
 
 # F00 Name
 

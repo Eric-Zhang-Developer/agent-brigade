@@ -3,7 +3,7 @@
 
   verify_release.py --commit "$(git rev-parse HEAD)" [--url https://my-app.example]
 
-Checks, against kit.toml [release]:
+Checks, against .agents/config.toml [release]:
   health   GET <url><health_path> returns JSON {"commit": "<sha>"} matching --commit (7+ hex chars)
   smoke    every smoke_paths entry answers 200
   secrets  the home page and its same-origin <script src> bundles contain none of secret_patterns
@@ -19,7 +19,7 @@ import urllib.request
 from datetime import datetime, timezone
 from urllib.parse import urljoin, urlsplit
 
-from kitlib import as_list, load_config, parser, root_from
+from lib import as_list, load_config, parser, root_from
 
 TIMEOUT = 10
 MAX_BYTES = 5 * 1024 * 1024
@@ -27,7 +27,7 @@ MAX_BUNDLES = 64
 
 
 def fetch(url: str) -> tuple[int, bytes]:
-    req = urllib.request.Request(url, headers={"User-Agent": "agent-brigade-verify"})
+    req = urllib.request.Request(url, headers={"User-Agent": "release-verify"})
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
             return r.status, r.read(MAX_BYTES)
@@ -95,7 +95,7 @@ def verify(origin: str, commit: str, rel: dict) -> dict:
 def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--commit", required=True, help="the reviewed commit production should serve")
-    ap.add_argument("--url", help="production origin (default kit.toml [release].url)")
+    ap.add_argument("--url", help="production origin (default .agents/config.toml [release].url)")
     ap.add_argument("--allow-http", action="store_true", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
     root = root_from(args)

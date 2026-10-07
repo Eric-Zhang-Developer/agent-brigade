@@ -4,14 +4,14 @@ from contextlib import redirect_stdout
 
 import helpers
 from check_ownership import lint_specs, main
-from kitlib import load_config, load_specs
+from lib import load_config, load_specs
 
 KIT = 'profile = "hackathon"\n[ownership]\nfrozen = ["core/", "kit.toml"]\nopen = ["NOW.md"]\n'
 
 
 class Lint(helpers.RepoCase):
     files = {
-        "kit.toml": KIT,
+        ".agents/config.toml": KIT,
         "specs/features/F00-boot/spec.md": helpers.spec("F00", [], extra="bootstrap: true\n"),
         "specs/features/F01-a/spec.md": helpers.spec("F01", ["src/a/"], ["F00"]),
         "specs/features/F02-b/spec.md": helpers.spec("F02", ["src/a/x"], ["F09"]),
@@ -28,7 +28,7 @@ class Lint(helpers.RepoCase):
 
 class Titles(helpers.RepoCase):
     files = {
-        "kit.toml": KIT,
+        ".agents/config.toml": KIT,
         "specs/features/F00-boot/spec.md": helpers.spec("F00", [], extra="bootstrap: true\n"),
         "specs/features/F01-a/spec.md": helpers.spec("F01", ["src/a/"]),
     }
@@ -43,8 +43,11 @@ class Titles(helpers.RepoCase):
 
     def test_feature_in_owns_plus_extras_and_open(self):
         rc, out = self.check("[F01] a", {"src/a/x.py": "x", "changes/F01.md": "done", "NOW.md": "now",
-                                         "specs/decisions/F01-why.md": "d", "specs/inbox/F01-q.md": "q"})
+                                         "specs/decisions/F01-why.md": "d"})
         self.assertEqual(rc, 0, out)
+
+    def test_inbox_files_are_gone(self):  # judgment calls are issues now
+        self.assertEqual(self.check("[F01] a", {"specs/inbox/F01-q.md": "q"})[0], 1)
 
     def test_feature_outside_owns_fails(self):
         rc, out = self.check("[F01] a", {"src/b/x.py": "x"})

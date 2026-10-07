@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Write <reports>/status.md: done, in progress, ready next, blocked, needs-human, main CI, time left.
+"""Status: done, in progress, ready next, blocked, needs-human, main CI, time left.
 
-  status_report.py [--out PATH] [--now ISO] [--offline]
+  status.py --issue            rewrite the pinned "Status" issue (CI does this on every push to main)
+  status.py --out -            print it;  --out FILE writes a file
+  status.py --offline ...      no gh calls: local branches only, and says so
 
-Uses `gh` for PRs and CI when available; --offline (or no gh) falls back to local branches and says so.
 Anything it can't determine prints as `unknown`, never a guess.
 """
 
@@ -12,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from check_gates import fmt, offset
-from kitlib import as_list, done_ids, gh_json, git, load_config, load_specs, load_toml, parse_title, parser, root_from, specs_dir
+from lib import as_list, done_ids, gh, gh_json, git, load_config, load_specs, load_toml, parse_title, parser, root_from, specs_dir
 
 
 def age_minutes(iso: str, now: datetime) -> int:
@@ -91,12 +92,14 @@ def build(root: Path, cfg: dict, now: datetime, offline: bool) -> str:
     out += [f"- {f}: waiting on {[d for d in as_list(specs[f].get('depends_on')) if d not in done]}" for f in blocked] or ["- none"]
 
     out += ["", "## Needs human"]
-    inbox = sorted(p for p in (specs_dir(root, cfg) / "inbox").glob("*.md") if p.name != "needs-human.md")
-    for p in inbox:
-        text = p.read_text()
-        door = " **one-way door**" if "one-way door: yes" in text.lower() else ""
-        out.append(f"- `{p.name}`: {text.strip().splitlines()[0].lstrip('# ')}{door}")
-    if not inbox:
+    asks = None if offline else gh_json(root, "issue", "list", "--state", "open", "--label", "needs-human",
+                                        "--limit", "100", "--json", "number,title,labels,url")
+    if asks is None:
+        out.append("- unknown (offline or gh unavailable): check issues labelled `needs-human`")
+    for i in sorted(asks or [], key=lambda i: i["number"]):
+        door = " **one-way door**" if any(lb["name"] == "one-way-door" for lb in i.get("labels", [])) else ""
+        out.append(f"- [#{i['number']}]({i['url']}) {i['title']}{door}")
+    if asks == []:
         out.append("- none")
 
     out += ["", "## main CI"]
@@ -116,9 +119,27 @@ def _first_line(root, cfg, fid) -> str:
     return lines[0][:140] if lines else ""
 
 
+def update_issue(root: Path, text: str) -> int:
+    """Rewrite the body of the open issue labelled `status`, creating and pinning it the first time."""
+    found = gh_json(root, "issue", "list", "--state", "open", "--label", "status", "--json", "number")
+    if found is None:
+        print("status: gh unavailable or not authenticated; nothing updated")
+        return 1
+    if found:
+        r = gh(root, "issue", "edit", str(found[0]["number"]), "--body", text)
+    else:
+        r = gh(root, "issue", "create", "--title", "Status", "--label", "status", "--body", text)
+        if r and r.returncode == 0:
+            gh(root, "issue", "pin", r.stdout.strip().rsplit("/", 1)[-1])
+    ok = bool(r) and r.returncode == 0
+    print(f"status: {'updated the Status issue' if ok else 'failed: ' + (r.stderr.strip() if r else 'no gh')}")
+    return 0 if ok else 1
+
+
 def main(argv=None) -> int:
     ap = parser(__doc__)
-    ap.add_argument("--out", help="output file (default <reports>/status.md); '-' for stdout")
+    ap.add_argument("--out", help="output file, or '-' for stdout")
+    ap.add_argument("--issue", action="store_true", help="rewrite the pinned issue labelled `status`")
     ap.add_argument("--now", help="ISO time with offset (default: now)")
     ap.add_argument("--offline", action="store_true", help="don't call gh")
     args = ap.parse_args(argv)
@@ -127,11 +148,15 @@ def main(argv=None) -> int:
     now = datetime.fromisoformat(args.now) if args.now else datetime.now(timezone.utc)
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
+    if not (args.out or args.issue):
+        ap.error("pass --issue or --out")
     text = build(root, cfg, now, args.offline)
+    if args.issue:
+        return update_issue(root, text)
     if args.out == "-":
         sys.stdout.write(text)
         return 0
-    out = Path(args.out) if args.out else root / cfg["paths"]["reports"] / "status.md"
+    out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text)
     print(f"status: wrote {out}")

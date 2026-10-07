@@ -1,10 +1,9 @@
-# agent-brigade CI. Installed by init.py. Make `ci` a required check in branch protection
-# (profiles/hackathon/preflight.md). Keep it fast: a slow CI caps how fast anything merges.
+# Make `ci` a required check on main. Keep it fast: a slow CI caps how fast anything merges.
 name: ci
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, edited]   # edited: fixing a PR title reruns the gates
+    types: [opened, synchronize, reopened, edited]   # edited: fixing a PR title reruns the checks
   push:
     branches: [main]
 
@@ -25,7 +24,7 @@ jobs:
           python-version: "3.11"
 
       - name: Spec lint
-        run: python3 core/scripts/check_ownership.py --lint-specs
+        run: python3 .agents/scripts/check_ownership.py --lint-specs
 
       - name: Ownership, gates, markers (PR)
         if: github.event_name == 'pull_request'
@@ -33,14 +32,34 @@ jobs:
           TITLE: ${{ github.event.pull_request.title }}
           BASE: origin/${{ github.event.pull_request.base.ref }}
         run: |
-          python3 core/scripts/check_ownership.py --title "$TITLE" --base "$BASE"
-          python3 core/scripts/check_gates.py --title "$TITLE" --base "$BASE"
-          python3 core/scripts/check_markers.py --base "$BASE"
+          python3 .agents/scripts/check_ownership.py --title "$TITLE" --base "$BASE"
+          python3 .agents/scripts/check_gates.py --title "$TITLE" --base "$BASE"
+          python3 .agents/scripts/check_markers.py --base "$BASE"
 
       - name: Markers (main)
         if: github.event_name == 'push'
-        run: python3 core/scripts/check_markers.py --all
+        run: python3 .agents/scripts/check_markers.py --all
 
-      # Your project's own checks go below: tests, lint, build. Keep the golden test here.
+      # Your project's own checks go here: tests, lint, build.
       - name: Project checks
         run: echo "Add your test command here (see specs/tech-stack.md, Checks)"
+
+  issues:
+    # After a merge: one issue per feature spec (closed when done) and a fresh pinned Status issue.
+    if: github.event_name == 'push'
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: read
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python3 .agents/scripts/sync_issues.py
+      - run: python3 .agents/scripts/status.py --issue

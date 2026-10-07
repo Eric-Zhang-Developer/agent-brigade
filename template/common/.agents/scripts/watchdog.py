@@ -8,10 +8,10 @@ Each check, every interval:
   sessions   a heartbeat file older than [watchdog].heartbeat_minutes = dead session: run [watchdog].restart
              (a shell template with {worker} and {worktree}), or alert if no restart command is set.
   claims     draft PRs with no push for stale_claim_minutes get a comment; at close_claim_minutes they're closed.
-  main       main CI red for longer than main_red_minutes: alert.
+  main       main CI red for longer than main_red_minutes: alert and open a `main-red` issue; closed when green.
   resources  free disk / RAM below min_free_disk_gb / min_free_ram_gb: alert.
 Alerts run [watchdog].alert (a shell template with {message}), or print. --dry-run prints actions only.
-Agent tool recipes: core/docs/integrations/. Running on a cloud machine: core/docs/remote.md.
+Heartbeats live in <git common dir>/agent-heartbeats/, shared by every worktree. Settings: .agents/config.toml [watchdog].
 """
 
 import json
@@ -26,7 +26,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from kitlib import gh_json, load_config, parser, root_from
+from lib import gh, gh_json, heartbeat_dir, load_config, parser, root_from
 
 
 def run_template(template: str, dry: bool, **values) -> None:
@@ -59,7 +59,7 @@ def minutes_since(iso: str, now: datetime) -> float:
 class Watchdog:
     def __init__(self, root: Path, cfg: dict, dry: bool):
         self.root, self.cfg, self.dry = root, cfg["watchdog"], dry
-        self.hb_dir = root / self.cfg["heartbeat_dir"]
+        self.hb_dir = heartbeat_dir(root)
         self.state_path = self.hb_dir.parent / "watchdog-state.json"
         try:
             self.state = json.loads(self.state_path.read_text())
@@ -138,10 +138,29 @@ class Watchdog:
             red.append(r)
         if not red:
             self.clear("main-red")
+            self.close_main_red_issues()
             return
         mins = minutes_since(red[-1]["createdAt"], now)
         if mins > self.cfg["main_red_minutes"]:
-            self.alert(f"main has been red for {mins:.0f} min: land a FIX or REVERT", key="main-red")
+            msg = f"main has been red for {mins:.0f} min: land a FIX or REVERT"
+            if "main-red" not in self.state["alerted"]:
+                self.open_main_red_issue(msg)
+            self.alert(msg, key="main-red")
+
+    def open_main_red_issue(self, msg: str):
+        if gh_json(self.root, "issue", "list", "--state", "open", "--label", "main-red", "--json", "number"):
+            return
+        print("watchdog: opening a main-red issue")
+        if not self.dry:
+            gh(self.root, "issue", "create", "--label", "main-red", "--title", "main is red",
+               "--body", f"{msg}. The owner of the breaking change lands `[FIX-<ID>]`; after that anyone may "
+                         "`[REVERT-<sha>]`. Opened by the watchdog; it closes this when main is green.")
+
+    def close_main_red_issues(self):
+        for i in gh_json(self.root, "issue", "list", "--state", "open", "--label", "main-red", "--json", "number") or []:
+            print(f"watchdog: main is green, closing #{i['number']}")
+            if not self.dry:
+                gh(self.root, "issue", "close", str(i["number"]), "--comment", "main is green again (watchdog).")
 
     def check_resources(self):
         disk = shutil.disk_usage(self.root).free / 1024**3

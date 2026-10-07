@@ -5,14 +5,14 @@
   check_markers.py --base origin/main   lines added since the merge base (CI)
   check_markers.py --all             every tracked text file (audits, examples)
 
-A line containing `markers: allow` is skipped. Patterns: kit.toml [markers].
+A line containing `markers: allow` is skipped. Patterns: .agents/config.toml [markers].
 """
 
 import re
 import sys
 from pathlib import Path
 
-from kitlib import as_list, git, load_config, parser, root_from
+from lib import as_list, git, load_config, parser, root_from
 
 CONFLICT = re.compile(r"^(<{7} |={7}$|>{7} )")
 
@@ -70,7 +70,8 @@ def main(argv=None) -> int:
         lines = all_lines(root)
     else:
         diff_args = ["diff", "--cached"] if args.staged else ["diff", f"{args.base}...HEAD"]
-        lines = added_lines(git(root, *diff_args, "-U0", "--no-color", "--no-ext-diff", "--text"))
+        # no --text: binaries show as "Binary files differ" and are skipped, the same as --all skips them
+        lines = added_lines(git(root, *diff_args, "-U0", "--no-color", "--no-ext-diff"))
 
     findings = 0
     for path, n, text in lines:

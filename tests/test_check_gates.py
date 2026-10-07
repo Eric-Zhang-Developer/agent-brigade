@@ -16,7 +16,6 @@ no_new_phase = 2
 at = "30:00"
 freeze = true
 allow = ["F09"]
-max_lines = 5
 [[gate]]
 at = "34:00"
 report = true
@@ -47,7 +46,7 @@ class Base(helpers.RepoCase):
 
 class Hackathon(Base):
     files = {
-        "kit.toml": 'profile = "hackathon"\n[pr]\nmax_lines = 20\nexclude = ["data/"]\n',
+        ".agents/config.toml": 'profile = "hackathon"\n[pr]\nwarn_lines = 20\nexclude = ["data/"]\n',
         "specs/gates.toml": GATES,
         "specs/features/F01-a/spec.md": helpers.spec("F01", ["src/"], phase=1),
         "specs/features/F02-b/spec.md": helpers.spec("F02", ["lib/"], phase=2),
@@ -76,22 +75,24 @@ class Hackathon(Base):
         self.assertEqual(self.gate("[F01] a", at("31:00"))[0], 1)
         self.assertEqual(self.gate("[FIX-F01] a", at("31:00"))[0], 0)
 
-    def test_freeze_allow_and_tighter_cap(self):
-        rc, out = self.gate("[F09] report", at("31:00"), {"src/x.py": "1\n2\n3\n4\n5\n6\n"})
-        self.assertEqual(rc, 1)
-        self.assertIn("cap is 5", out)
+    def test_freeze_allow(self):
+        self.assertEqual(self.gate("[F09] report", at("31:00"))[0], 0)
 
     def test_report_and_hard_stop(self):
         self.assertEqual(self.gate("[PLAN] more", at("34:30"))[0], 1)
         self.assertEqual(self.gate("[F09] report", at("34:30"))[0], 0)
         self.assertEqual(self.gate("[FIX-F01] a", at("36:00"))[0], 1)
 
-    def test_size_cap_excludes(self):
+    def test_large_pr_warns_never_fails(self):
         big = "".join(f"{i}\n" for i in range(50))
-        self.assertEqual(self.gate("[F01] a", at("5:00"), {"data/big.json": big})[0], 0)
         rc, out = self.gate("[F01] a", at("5:00"), {"src/big.py": big})
-        self.assertEqual(rc, 1)
-        self.assertIn("split it", out)
+        self.assertEqual(rc, 0, out)
+        self.assertIn("large PR (50 changed lines, guideline 20)", out)  # ::warning:: in Actions
+
+    def test_excluded_paths_dont_count(self):
+        big = "".join(f"{i}\n" for i in range(50))
+        rc, out = self.gate("[F01] a", at("5:00"), {"data/big.json": big})
+        self.assertNotIn("large PR", out)
 
     def test_bad_title(self):
         self.assertEqual(self.gate("whatever", at("5:00"))[0], 1)
@@ -99,7 +100,7 @@ class Hackathon(Base):
 
 class Project(Base):
     files = {
-        "kit.toml": 'profile = "project"\n[pr]\nmax_lines = 0\n',
+        ".agents/config.toml": 'profile = "project"\n[pr]\nwarn_lines = 0\n',
         "specs/milestones.toml": '[[milestone]]\nname = "v1"\nship = "2026-11-15"\nfreeze_days = 3\n'
                                  'features = ["F01"]\ncut = ["F03"]\n[[milestone]]\nname = "later"\nship = ""\n',
     }
@@ -123,7 +124,7 @@ class Project(Base):
 
 
 class EmptyStart(Base):
-    files = {"kit.toml": 'profile = "hackathon"\n', "specs/gates.toml": 'run_start = ""\n[[gate]]\nat = "0:00"\nhard_stop = true\n'}
+    files = {".agents/config.toml": 'profile = "hackathon"\n', "specs/gates.toml": 'run_start = ""\n[[gate]]\nat = "0:00"\nhard_stop = true\n'}
 
     def test_empty_run_start_means_gates_off(self):
         rc, out = self.gate("[F00] boot", "2026-10-10T12:00:00+00:00")
@@ -131,9 +132,9 @@ class EmptyStart(Base):
 
 
 class Missing(Base):
-    files = {"kit.toml": 'profile = "hackathon"\n'}
+    files = {".agents/config.toml": 'profile = "hackathon"\n'}
 
-    def test_no_gates_file_still_caps(self):
+    def test_no_gates_file(self):
         rc, out = self.gate("[F01] a", "2026-10-10T12:00:00+00:00")
         self.assertEqual(rc, 0)
         self.assertIn("not enforced", out)

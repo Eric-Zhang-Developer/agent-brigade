@@ -12,7 +12,7 @@ Updated: <YYYY-MM-DD> by <who>
 <!-- The ONE next thing, specific enough that a fresh agent could start it in 2 minutes. Usually a feature ID. -->
 
 ## Open questions
-<!-- Things waiting on a human. Link inbox items. One-way doors first. -->
+<!-- Things waiting on a human. Link the `needs-human` issues. One-way doors first. -->
 
 ## Next milestone
 <!-- From specs/milestones.toml: name, ship date, what's still in, what's on the cut list. -->

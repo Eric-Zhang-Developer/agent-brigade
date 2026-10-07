@@ -1,4 +1,4 @@
-"""Shared helpers for agent-brigade scripts: config, spec front matter, git, gh. Stdlib only."""
+"""Shared helpers for the .agents scripts: config, spec front matter, git, gh. Stdlib only."""
 
 import argparse
 import copy
@@ -12,17 +12,15 @@ from pathlib import Path
 DEFAULTS = {
     "profile": "hackathon",
     "size": "full",
-    "kit_dev": False,
     "paths": {"specs": "specs", "changes": "changes", "reports": "reports"},
-    "ownership": {"frozen": ["AGENTS.md", "kit.toml", ".github/", "core/", "profiles/"], "open": []},
+    "ownership": {"frozen": ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"], "open": []},
     "agents": {"max_parallel": 3, "reporter": ""},
-    "pr": {"max_lines": 400, "exclude": []},
+    "pr": {"warn_lines": 400, "exclude": []},
     "markers": {
         "debug_patterns": [r"^\s*debugger;?\s*$", r"^\s*breakpoint\(\)", r"^\s*import pdb", r"console\.log\("],
         "ignore": [],
     },
     "watchdog": {
-        "heartbeat_dir": ".agent-brigade/heartbeats",
         "heartbeat_minutes": 20,
         "stale_claim_minutes": 45,
         "close_claim_minutes": 60,
@@ -45,11 +43,14 @@ DEFAULTS = {
 
 # --- config ---------------------------------------------------------------------------------------------------------
 
+CONFIG = Path(".agents") / "config.toml"
+
+
 def find_root(start=None) -> Path:
-    """Nearest parent directory containing kit.toml, else the start directory."""
+    """Nearest parent directory containing .agents/config.toml, else the start directory."""
     here = Path(start or Path.cwd()).resolve()
     for d in (here, *here.parents):
-        if (d / "kit.toml").is_file():
+        if (d / CONFIG).is_file():
             return d
     return here
 
@@ -62,7 +63,7 @@ def _merge(base: dict, over: dict) -> dict:
 
 
 def load_config(root: Path) -> dict:
-    path = Path(root) / "kit.toml"
+    path = Path(root) / CONFIG
     data = tomllib.loads(path.read_text()) if path.is_file() else {}
     return _merge(DEFAULTS, data)
 
@@ -178,6 +179,22 @@ def changed_files(root: Path, base: str) -> list[str]:
     return git_lines(root, "diff", "--name-only", "--no-renames", f"{base}...HEAD")
 
 
+def heartbeat_dir(root: Path) -> Path:
+    """Shared by every worktree of the repo: <git common dir>/agent-heartbeats. Never committed."""
+    common = git(root, "rev-parse", "--git-common-dir", check=False).strip() or ".git"
+    return (Path(root) / common).resolve() / "agent-heartbeats"
+
+
+def gh(root: Path, *args: str) -> subprocess.CompletedProcess | None:
+    """Run a gh command that changes something. None if gh is missing."""
+    if not shutil.which("gh"):
+        return None
+    try:
+        return subprocess.run(["gh", *args], cwd=root, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
 def gh_json(root: Path, *args: str):
     """Run `gh ... --json` and parse it. None if gh is missing, unauthenticated or fails."""
     if not shutil.which("gh"):
@@ -193,7 +210,7 @@ def gh_json(root: Path, *args: str):
 
 def parser(doc: str) -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=doc, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--root", help="repo root (default: nearest parent with kit.toml)")
+    p.add_argument("--root", help="repo root (default: nearest parent with .agents/config.toml)")
     return p
 
 

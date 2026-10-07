@@ -17,9 +17,9 @@
 ## Checks (run before marking a PR ready)
 <!-- Keep CI under ~5 minutes: a slow CI caps how fast every agent can merge. Docs-only changes can skip heavy jobs. -->
 ```bash
-python3 core/scripts/check_ownership.py --lint-specs
-python3 core/scripts/check_ownership.py --title "<PR title>" --base origin/main
-python3 core/scripts/check_gates.py --title "<PR title>" --base origin/main
-python3 core/scripts/check_markers.py --base origin/main
+python3 .agents/scripts/check_ownership.py --lint-specs
+python3 .agents/scripts/check_ownership.py --title "<PR title>" --base origin/main
+python3 .agents/scripts/check_gates.py --title "<PR title>" --base origin/main
+python3 .agents/scripts/check_markers.py --base origin/main
 # your tests here
 ```

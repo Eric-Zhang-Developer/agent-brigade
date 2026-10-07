@@ -1,10 +1,8 @@
-<!-- Title must start with: [F<n>] name · [FIX-F<n>] · [C<n>] · [PLAN] · [REVERT-<sha>]   (core/docs/config.md) -->
+<!-- Title: [F<n>] name · [FIX-F<n>] · [C<n>] · [PLAN] · [REVERT-<sha>] -->
+
+Closes #<!-- the feature's issue -->
 
 ## What and why
-
-## Who
-- Worker / agent tool:
-- Human owner:
 
 ## Checks
 - Spec validation: <!-- paste output or link -->

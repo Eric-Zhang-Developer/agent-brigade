@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 EXAMPLE = Path(__file__).resolve().parents[1]
-SCRIPTS = EXAMPLE.parents[1] / "core" / "scripts"
+SCRIPTS = EXAMPLE.parents[1] / "template" / "common" / ".agents" / "scripts"
 F03_FILES = ["wordfreq/__main__.py", "tests/test_cli.py", "changes/F03.md"]
 DURING_RUN, AFTER_FREEZE, TOO_EARLY = "2026-01-10T14:00:00-05:00", "2026-01-11T06:00:00-05:00", "2026-01-10T09:30:00-05:00"
 
@@ -49,7 +49,7 @@ class Loop(unittest.TestCase):
 
     def test_status_before_shows_f03_ready(self):
         self.git("checkout", "-q", "main")
-        out = check(self.root, "status_report.py", "--offline", "--out", "-", "--now", DURING_RUN).stdout
+        out = check(self.root, "status.py", "--offline", "--out", "-", "--now", DURING_RUN).stdout
         self.assertIn("## Ready next\n- F03 Command-line interface", out)
 
     def test_the_pr_passes_every_ci_check(self):

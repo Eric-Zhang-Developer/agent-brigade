@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""Enforce time gates and the PR size cap in CI, so a deadline is a rule instead of a suggestion.
+"""Enforce time gates in CI, so a deadline is a rule instead of a suggestion. Warn on large PRs.
 
   check_gates.py --title "[F07] Export" --base origin/main [--now 2026-10-11T08:00:00-04:00]
 
 hackathon: <specs>/gates.toml (only, no_new_phase, freeze, report, hard_stop).
 project:   <specs>/milestones.toml (milestone freeze windows and cut lists).
-Both:      [F<n>]/[FIX-]/[C<n>] PRs over [pr].max_lines changed lines fail (a gate may tighten it).
-Formats: core/docs/config.md.
+Both:      a PR over [pr].warn_lines changed lines gets a warning, never a failure: split along logical seams,
+           or say in the PR why it's one piece.
+Formats: the comments in specs/gates.toml and specs/milestones.toml.
 """
 
+import os
 import sys
 from datetime import date, datetime, timedelta, timezone
 
-from kitlib import as_list, git_lines, load_config, load_specs, load_toml, parse_title, parser, root_from, specs_dir
+from lib import as_list, git_lines, load_config, load_specs, load_toml, parse_title, parser, root_from, specs_dir
 
 
 def offset(at: str) -> timedelta:
@@ -131,14 +133,18 @@ def main(argv=None) -> int:
         else:
             reason, summary = project_rule(t, ms, now.date())
 
-    cap = int((gate or {}).get("max_lines", cfg["pr"]["max_lines"]))
-    if reason is None and cap and t["kind"] not in ("plan", "revert"):
+    warn = int(cfg["pr"]["warn_lines"])
+    big = None
+    if reason is None and warn and t["kind"] not in ("plan", "revert"):
         n = changed_lines(root, args.base, as_list(cfg["pr"]["exclude"]))
-        summary += f"; {n}/{cap} changed lines"
-        if n > cap:
-            reason = f"PR changes {n} lines, cap is {cap}: split it into parts ([ID] part 1/N)"
+        summary += f"; {n} changed lines"
+        if n > warn:
+            big = (f"large PR ({n} changed lines, guideline {warn}): split along logical seams if it helps review, "
+                   "or say in the description why it's one piece")
 
     print(f"gates: {summary}")
+    if big:
+        print(f"::warning::{big}" if os.environ.get("GITHUB_ACTIONS") else f"gates: warning: {big}")
     if reason:
         print(f"gates: REJECTED: {reason}")
         return 1

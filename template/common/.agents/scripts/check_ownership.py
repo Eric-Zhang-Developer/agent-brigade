@@ -4,12 +4,12 @@
   check_ownership.py --lint-specs                       specs are consistent (ids, deps, owns overlap)
   check_ownership.py --title "[F05] Map" --base origin/main   every changed file is allowed for that title
 
-Title rules are in core/docs/config.md ("PR titles").
+Title rules: AGENTS.md ("PR titles").
 """
 
 import sys
 
-from kitlib import as_list, changed_files, git_lines, load_config, load_specs, parse_title, parser, root_from
+from lib import as_list, changed_files, git_lines, load_config, load_specs, parse_title, parser, root_from
 
 
 def lint_specs(cfg: dict, features: dict[str, list[dict]]) -> list[str]:
@@ -50,7 +50,7 @@ def allowed(title: str, cfg: dict, features: dict, revert_files=None):
     if t["kind"] == "contract":
         prefixes = as_list(cfg["ownership"]["frozen"]) + [f"{specs}/"] + open_paths
     elif t["kind"] == "plan":
-        prefixes = [f"{specs}/features/", f"{specs}/roadmap.md", f"{specs}/inbox/"]
+        prefixes = [f"{specs}/features/", f"{specs}/roadmap.md"]
     elif t["kind"] == "revert":
         files = set(revert_files or [])
         return (lambda p: p in files), f"revert of {t['sha']}: {sorted(files)}"
@@ -62,7 +62,7 @@ def allowed(title: str, cfg: dict, features: dict, revert_files=None):
         if fm.get("bootstrap") is True:
             return (lambda p: True), f"{fid} is bootstrap: anything"
         prefixes = as_list(fm.get("owns")) + open_paths + [
-            f"{changes}/{fid}.md", f"{specs}/features/{fid}-", f"{specs}/decisions/{fid}-", f"{specs}/inbox/{fid}-",
+            f"{changes}/{fid}.md", f"{specs}/features/{fid}-", f"{specs}/decisions/{fid}-",
         ]
     return (lambda p: any(p.startswith(x) for x in prefixes)), f"{prefixes}"
 

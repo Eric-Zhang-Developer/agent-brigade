@@ -1,4 +1,4 @@
-"""Test helpers: put core/scripts on sys.path, build throwaway git repos, serve fake HTTP."""
+"""Test helpers: put the template scripts on sys.path, build throwaway git repos, serve fake HTTP."""
 
 import http.server
 import subprocess
@@ -8,9 +8,10 @@ import threading
 import unittest
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
-KIT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(SCRIPTS))
+KIT = Path(__file__).resolve().parents[1]
+SCRIPTS = KIT / "template/common/.agents/scripts"
+HACKATHON_SCRIPTS = KIT / "template/hackathon/.agents/scripts"
+sys.path[:0] = [str(SCRIPTS), str(HACKATHON_SCRIPTS)]
 
 
 def sh(cwd, *args) -> str:
@@ -32,7 +33,7 @@ def spec(fid: str, owns: list[str], depends_on=(), phase=1, extra="") -> str:
 class RepoCase(unittest.TestCase):
     """A temp git repo with an initial commit on `main`. self.root is its path."""
 
-    files: dict[str, str] = {"kit.toml": 'profile = "hackathon"\n'}
+    files: dict[str, str] = {".agents/config.toml": 'profile = "hackathon"\n'}
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()

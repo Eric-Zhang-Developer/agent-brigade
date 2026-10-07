@@ -1,4 +1,6 @@
-# Hackathon time gates. Enforced by core/scripts/check_gates.py in CI. Format: core/docs/config.md
+# Time gates, enforced in CI by .agents/scripts/check_gates.py. Only the latest gate whose time has passed applies.
+# Kinds: only = [IDs] · no_new_phase = N · freeze = true (+ allow = [IDs]) · report = true · hard_stop = true.
+# A gate with no kind is open.
 # Defaults assume a 36-hour event. Scale every `at` to yours, and set run_start in the launch commit.
 run_start = ""          # SET IN THE LAUNCH COMMIT, e.g. "2026-10-10T09:00:00-04:00". Empty = gates off.
 
@@ -17,7 +19,6 @@ no_new_phase = 3        # late-phase ideas that haven't started yet don't start
 at = "30:00"
 freeze = true           # no new features: FIX, REVERT and contract PRs only
 allow = []              # e.g. your reporter's ID
-max_lines = 150         # small, reviewable fixes only
 
 [[gate]]
 at = "34:00"

@@ -11,5 +11,5 @@ cut: ok
 `add "text" --tag work`, then `list --tag work`.
 
 ## Defaults
-How tags are stored is a **one-way door** (it changes the frozen storage format). Don't pick a default; see the
-inbox.
+How tags are stored is a **one-way door** (it changes the frozen storage format). Take no default: it's a
+`needs-human` + `one-way-door` issue.

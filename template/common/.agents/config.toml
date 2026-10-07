@@ -1,0 +1,47 @@
+# Settings for the scripts in .agents/scripts. Every key is optional; the defaults are shown.
+profile = "__PROFILE__"          # hackathon | project
+size = "__SIZE__"                # lite (one agent) | full (parallel agents)
+
+[paths]
+specs = "specs"
+changes = "changes"              # done notes: changes/<ID>.md
+reports = "reports"              # deploy receipts, final report
+
+[ownership]
+# Only [C<n>] PRs may change these path prefixes.
+frozen = ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"]
+# Any PR may change these.
+open = [__OPEN__]
+
+[agents]
+max_parallel = __PARALLEL__      # agents running at once on one machine
+reporter = ""                    # worker that refreshes the Status issue (full size)
+
+[pr]
+warn_lines = 400                 # CI warns (never fails) above this many changed lines; 0 = off
+exclude = []                     # prefixes not counted: lockfiles, generated data
+
+[markers]
+debug_patterns = ['^\s*debugger;?\s*$', '^\s*breakpoint\(\)', '^\s*import pdb', 'console\.log\(']
+ignore = []                      # prefixes never scanned
+
+[watchdog]
+heartbeat_minutes = 20           # a quieter heartbeat means a dead session
+stale_claim_minutes = 45         # draft PR with no push: comment
+close_claim_minutes = 60         # ...then close
+main_red_minutes = 20            # main red longer: alert + `main-red` issue
+min_free_disk_gb = 10
+min_free_ram_gb = 2
+restart = ""                     # shell template with {worker} {worktree}; empty = alert only
+alert = ""                       # shell template with {message}; empty = print only
+
+[release]
+url = ""                         # production origin, https://...
+health_path = "/api/health"      # must return JSON {"commit": "<sha>"}
+smoke_paths = ["/"]
+snapshot_paths = ["/"]
+secret_patterns = ["sk-", "sk_live_", "AIza", "ghp_", "github_pat_", "xox", "mongodb+srv://", "postgres://", "-----BEGIN"]
+
+[budget]
+monthly_usd = 0                  # project: your monthly cap
+reserve_final_hours = 3          # hackathon: keep this much capacity for the end

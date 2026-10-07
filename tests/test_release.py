@@ -28,7 +28,7 @@ class Verify(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
-        (self.root / "kit.toml").write_text('profile = "hackathon"\n[release]\nsmoke_paths = ["/", "/about"]\n')
+        helpers.write(self.root, {".agents/config.toml": 'profile = "hackathon"\n[release]\nsmoke_paths = ["/", "/about"]\n'})
 
     def tearDown(self):
         self._tmp.cleanup()
@@ -88,7 +88,7 @@ class Snapshot(unittest.TestCase):
     def test_snapshot_and_manifest(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            (root / "kit.toml").write_text('profile = "hackathon"\n[release]\nsnapshot_paths = ["/", "/api/health", "/missing"]\n')
+            helpers.write(root, {".agents/config.toml": 'profile = "hackathon"\n[release]\nsnapshot_paths = ["/", "/api/health", "/missing"]\n'})
             out = root / "snap"
             with site() as s, redirect_stdout(io.StringIO()):
                 rc = demo_snapshot.main(["--root", str(root), "--url", s.origin, "--out", str(out), "--allow-http"])

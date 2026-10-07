@@ -18,7 +18,7 @@ def run(root, *args):
 
 
 class Markers(helpers.RepoCase):
-    files = {"kit.toml": 'profile = "project"\n[markers]\nignore = ["vendor/"]\n', "clean.py": "x = 1\n"}
+    files = {".agents/config.toml": 'profile = "project"\n[markers]\nignore = ["vendor/"]\n', "clean.py": "x = 1\n"}
 
     def test_staged_conflict(self):
         helpers.write(self.root, {"bad.txt": CONFLICT})
@@ -46,19 +46,25 @@ class Markers(helpers.RepoCase):
         rc, out = run(self.root, "--all")
         self.assertEqual(rc, 0, out)
 
+    def test_staged_binary_is_skipped(self):  # from a real project: a binary game file tripped the scan
+        (self.root / "game.swf").write_bytes(b"FWS\x09\xf4\x49\0\0" + LT.encode() + b" x\n")   # not UTF-8
+        helpers.sh(self.root, "git", "add", "game.swf")
+        rc, out = run(self.root, "--staged")
+        self.assertEqual(rc, 0, out)
+
     def test_clean_passes(self):
         self.assertEqual(run(self.root, "--all")[0], 0)
 
     def test_hook_blocks_commit(self):
-        hooks = self.root / "core" / "hooks"
+        hooks = self.root / ".agents" / "hooks"
         hooks.mkdir(parents=True)
-        (hooks / "pre-commit").write_bytes((helpers.KIT / "core/hooks/pre-commit").read_bytes())
+        (hooks / "pre-commit").write_bytes((helpers.SCRIPTS.parent / "hooks/pre-commit").read_bytes())
         (hooks / "pre-commit").chmod(0o755)
-        scripts = self.root / "core" / "scripts"
+        scripts = self.root / ".agents" / "scripts"
         scripts.mkdir()
-        for name in ("kitlib.py", "check_markers.py", "check_ownership.py"):
+        for name in ("lib.py", "check_markers.py", "check_ownership.py"):
             (scripts / name).write_bytes((helpers.SCRIPTS / name).read_bytes())
-        helpers.sh(self.root, "git", "config", "core.hooksPath", "core/hooks")
+        helpers.sh(self.root, "git", "config", "core.hooksPath", ".agents/hooks")
         helpers.write(self.root, {"bad.txt": CONFLICT})
         helpers.sh(self.root, "git", "add", "-A")
         r = subprocess.run(["git", "commit", "-q", "-m", "x"], cwd=self.root, capture_output=True, text=True)

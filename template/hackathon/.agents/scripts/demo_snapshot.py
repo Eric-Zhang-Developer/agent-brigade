@@ -3,9 +3,9 @@
 
   demo_snapshot.py --out public/snapshot [--url https://my-app.example]
 
-Fetches every path in kit.toml [release].snapshot_paths and writes it under --out ("/" -> index.html,
+Fetches every path in .agents/config.toml [release].snapshot_paths and writes it under --out ("/" -> index.html,
 "/api/items" -> api/items). Writes manifest.json with the url, the commit from the health endpoint (if any),
-the time, and each file's status and sha256. Exit 1 if any path fails. Pattern: profiles/hackathon/demo-snapshot.md.
+the time, and each file's status and sha256. Exit 1 if any path fails. 
 """
 
 import argparse
@@ -15,7 +15,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from kitlib import as_list, load_config, parser, root_from
+from lib import as_list, load_config, parser, root_from
 from verify_release import check_origin, fetch
 
 
@@ -59,7 +59,7 @@ def snapshot(origin: str, rel: dict, out: Path) -> dict:
 def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--out", required=True, help="folder to write the snapshot into")
-    ap.add_argument("--url", help="origin to snapshot (default kit.toml [release].url)")
+    ap.add_argument("--url", help="origin to snapshot (default .agents/config.toml [release].url)")
     ap.add_argument("--allow-http", action="store_true", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
     root = root_from(args)

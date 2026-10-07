@@ -1,5 +1,5 @@
-# Project milestones: a little of the hackathon deadline in everyday work. Enforced by core/scripts/check_gates.py.
-# Format: core/docs/config.md. A milestone ships on `ship`; for `freeze_days` before it, only its own features merge,
+# Project milestones: a little of the hackathon deadline in everyday work. Enforced in CI by .agents/scripts/check_gates.py.
+# A milestone ships on `ship`; for `freeze_days` before it, only its own features merge,
 # and anything on its cut list is rejected. Leave `ship` empty for "no date yet" (no freeze).
 
 [[milestone]]

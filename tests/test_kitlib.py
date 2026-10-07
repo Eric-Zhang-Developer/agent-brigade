@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 import helpers  # noqa: F401  (sets sys.path)
-from kitlib import find_root, front_matter, load_config, load_specs, parse_title
+from lib import find_root, front_matter, load_config, load_specs, parse_title
 
 
 class FrontMatter(unittest.TestCase):
@@ -25,7 +25,7 @@ class Config(unittest.TestCase):
     def test_defaults_merge_and_find_root(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            (root / "kit.toml").write_text('profile = "project"\n[pr]\nmax_lines = 50\n')
+            helpers.write(root, {".agents/config.toml": 'profile = "project"\n[pr]\nmax_lines = 50\n'})
             (root / "a" / "b").mkdir(parents=True)
             self.assertEqual(find_root(root / "a" / "b"), root.resolve())
             cfg = load_config(root)
