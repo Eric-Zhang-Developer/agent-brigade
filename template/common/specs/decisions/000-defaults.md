@@ -12,4 +12,4 @@ undo it.
 2. Show "unknown / needs review" rather than guess.
 3. Take the smaller change that someone else can undo.
 4. Prefer deterministic code over a model call, and a model call over manual guessing.
-5. Log it in `decisions/<ID>-<slug>.md`.
+5. Log it in `decisions/<feature>-<topic>.md`.

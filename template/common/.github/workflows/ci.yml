@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -45,7 +45,8 @@ jobs:
         run: echo "Add your test command here (see specs/tech-stack.md, Checks)"
 
   issues:
-    # After a merge: one issue per feature spec (closed when done) and a fresh pinned Status issue.
+    # After a merge: one issue per feature spec (closed when done), one GitHub milestone per milestone, and a
+    # fresh pinned Status issue.
     if: github.event_name == 'push'
     needs: ci
     runs-on: ubuntu-latest
@@ -57,8 +58,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: python3 .agents/scripts/sync_issues.py

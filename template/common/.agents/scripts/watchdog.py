@@ -7,7 +7,8 @@ Each check, every interval:
   STOP       STOP file present: alert once and exit.
   sessions   a heartbeat file older than [watchdog].heartbeat_minutes = dead session: run [watchdog].restart
              (a shell template with {worker} and {worktree}), or alert if no restart command is set.
-  claims     draft PRs with no push for stale_claim_minutes get a comment; at close_claim_minutes they're closed.
+  claims     full size only: draft PRs with no push for stale_claim_minutes get a comment; at
+             close_claim_minutes they're closed. (Lite opens PRs when the work is ready, so there are no claims.)
   main       main CI red for longer than main_red_minutes: alert and open a `main-red` issue; closed when green.
   resources  free disk / RAM below min_free_disk_gb / min_free_ram_gb: alert.
 Alerts run [watchdog].alert (a shell template with {message}), or print. --dry-run prints actions only.
@@ -59,6 +60,7 @@ def minutes_since(iso: str, now: datetime) -> float:
 class Watchdog:
     def __init__(self, root: Path, cfg: dict, dry: bool):
         self.root, self.cfg, self.dry = root, cfg["watchdog"], dry
+        self.claims = cfg["size"] == "full"
         self.hb_dir = heartbeat_dir(root)
         self.state_path = self.hb_dir.parent / "watchdog-state.json"
         try:
@@ -153,8 +155,8 @@ class Watchdog:
         print("watchdog: opening a main-red issue")
         if not self.dry:
             gh(self.root, "issue", "create", "--label", "main-red", "--title", "main is red",
-               "--body", f"{msg}. The owner of the breaking change lands `[FIX-<ID>]`; after that anyone may "
-                         "`[REVERT-<sha>]`. Opened by the watchdog; it closes this when main is green.")
+               "--body", f"{msg}. The owner of the breaking change lands `fix(<slug>): ...`; after that anyone "
+                         "may `git revert` it (title `revert: ...`). Opened by the watchdog; it closes this when main is green.")
 
     def close_main_red_issues(self):
         for i in gh_json(self.root, "issue", "list", "--state", "open", "--label", "main-red", "--json", "number") or []:
@@ -181,7 +183,8 @@ class Watchdog:
             return False
         now = datetime.now(timezone.utc)
         self.check_sessions(time.time())
-        self.check_claims(now)
+        if self.claims:
+            self.check_claims(now)
         self.check_main(now)
         self.check_resources()
         self.save()
