@@ -37,8 +37,8 @@ def render_agents(profile: str, size: str) -> str:
     read_now = "\n   Project: read `NOW.md` before all of these." if profile == "project" else ""
     text = text.replace("__PROFILE_READ__", read_now)
     if size == "lite":
-        claim = ("2. Push your branch whenever you like; open the PR when the work is ready for CI, titled\n"
-                 "   `feat(<slug>): <name>`, with `Closes #<n>` (the feature's issue) in the body. Lite has no claims.")
+        claim = ("2. No claim in lite: build first, then open the PR at step 6, titled `feat(<slug>): <name>`, with\n"
+                 "   `Closes #<n>` (the feature's issue) in the body.")
     else:
         claim = ("2. Push and open a **draft PR** titled `feat(<slug>): <name>` right away. The draft is your claim. Put\n"
                  "   `Closes #<n>` (the feature's issue) and your worker name in the body. Mark it ready at step 6.")

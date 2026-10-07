@@ -35,7 +35,7 @@ __CLAIM__
 | Title | May change |
 |---|---|
 | `feat(<slug>): ...` | the feature's `owns`, its spec folder, `changes/<slug>.md`, `specs/decisions/<slug>-*` |
-| `fix(<slug>): ...` (also `refactor`, `perf`, `test`, `chore`, `style`) | the same, for a feature in flight or shipped |
+| `fix(<slug>): ...` (also `refactor`, `perf`, `test`, `chore`, `style`) | the same, for a feature in flight, done or shipped |
 | `fix: ...` with no scope (same types) | anything not frozen, not in `specs/` or `changes/`, and not owned by a feature in flight |
 | `docs: ...` | open paths (like `NOW.md`), and Markdown outside `specs/`, `changes/`, frozen paths and features in flight |
 | `contract: ...` | frozen paths and `specs/`: additive changes only |

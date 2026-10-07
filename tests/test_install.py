@@ -61,7 +61,7 @@ class Install(unittest.TestCase):
         agents = (self.root / "AGENTS.md").read_text()
         self.assertIn("## Project rules", agents)
         self.assertIn("## Lite mode", agents)
-        self.assertIn("Lite has no claims", agents)
+        self.assertIn("No claim in lite", agents)
         self.assertNotIn("draft PR", agents)
         self.assertNotIn("__", agents)
         self.assertEqual(cfg["schema"], 3)

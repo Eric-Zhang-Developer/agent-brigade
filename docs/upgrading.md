@@ -62,7 +62,8 @@ profiles. The installer stops on a schema-2 project until these are done. Do it 
    - Project: `freeze_days = N` → `freeze = "Nd"`, which now means the last N days through the end of the ship
      day (it was N + 1 days). Write `features` and `cut` as slugs; `cut` must be a subset of `features`.
 4. Delete `.github/pull_request_template.md` and `specs/features/_template/` if you never edited them, so the
-   installer writes the new ones.
+   installer writes the new ones. The installer never rewrites `ci.yml`: in it, change `actions/checkout@v4` to
+   `@v5` and `actions/setup-python@v5` to `@v6` (GitHub deprecated their Node 20 runtime).
 5. `python3 <kit>/install.py --profile <same> --upgrade --overwrite-agents .` (leave out `--overwrite-agents` if
    you edited `AGENTS.md`, and copy its new "Picking work", "The loop" and "PR titles" sections by hand).
 6. Retitle open PRs: `[F07] x` → `feat(<slug>): x`, `[FIX-F07]` → `fix(<slug>):`, `[C3]` → `contract:`,
