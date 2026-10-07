@@ -1,15 +1,11 @@
 ---
-id: F02
 name: Rank with alphabetical ties
-lane: A
-agent: claude-1
-phase: 1
-depends_on: [F00]
+depends_on: [bootstrap]
 owns: [wordfreq/rank.py, tests/test_rank]
-cut: never
+assignee: claude-1
 ---
 
-# F02 Rank
+# Rank
 
 ## Requirements
 - `ranked(counts, n) -> list[tuple[str, int]]`: highest count first, ties alphabetical, at most `n` items; `n <= 0`

@@ -1,13 +1,9 @@
 ---
-id: F02
 name: Search
-phase: 1
-depends_on: [F01]
+depends_on: [add-list]
 owns: [jotter/search.py, tests/test_search]
-cut: ok
-milestone: first-ship
 ---
 
-# F02 Search
-`search(notes, word)`: case-insensitive substring match, newest first. Wired into the CLI as `search WORD` (F01
+# Search
+`search(notes, word)`: case-insensitive substring match, newest first. Wired into the CLI as `search WORD` (add-list
 owns the CLI and added the subcommand stub).

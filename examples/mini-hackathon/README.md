@@ -9,10 +9,10 @@ not a project to submit.
 | `specs/mission.md` | Non-negotiables written as exact rules |
 | `specs/context/worked-example.md` → `tests/golden/` | The "answer key" turned into a frozen golden test |
 | `specs/features/*/spec.md` | 3 features + bootstrap, with disjoint `owns` |
-| `specs/gates.toml` | Bootstrap-only start, freeze, hard stop |
-| `specs/decisions/F01-ascii.md` | A default taken and logged instead of asking |
-| `changes/` | Done notes, including a known gap |
-| `tests/test_loop.py` | **The loop, replayed:** F03 built on a branch, then every CI check run on it, including the failures (a drive-by edit, a too-early start, a post-freeze PR, a conflict marker) |
+| `specs/milestones.toml` | Three milestones: a safe demo, the usable CLI, then a frozen final milestone |
+| `specs/decisions/tokenize-ascii.md` | A default taken and logged instead of asking |
+| `changes/` | Done notes under fixed headings, including a known gap |
+| `tests/test_loop.py` | **The loop, replayed:** `cli` built on a branch, then every CI check run on it, including the failures (a drive-by edit, a start before bootstrap, a post-freeze PR, a conflict marker) |
 
 Run it from the kit root:
 ```bash

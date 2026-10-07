@@ -1,3 +1,8 @@
-# F00 Bootstrap
-Shipped the frozen API (`count`, `top`), the golden test from the worked example, and placeholder modules.
-The golden test failed until F01 and F02 landed, as planned.
+## What shipped
+The frozen API (`count`, `top`), the golden test from the worked example, and placeholder modules.
+## Where it lives
+`wordfreq/__init__.py`, `tests/golden/`
+## How to check it
+`python3 -m unittest tests.golden.test_golden`
+## Gaps
+The golden test failed until tokenize and rank landed, as planned.

@@ -1,17 +1,18 @@
-run_start = "2026-01-10T09:00:00-05:00"
+start = "2026-01-10T09:00:00-05:00"
 
-[[gate]]
-at = "0:00"
-only = ["F00"]
+[[milestone]]
+name = "safe-demo"
+ship = "+1:00"
+features = ["bootstrap", "tokenize", "rank"]
 
-[[gate]]
-at = "1:00"
+[[milestone]]
+name = "usable"
+ship = "+20:00"
+features = ["cli"]
 
-[[gate]]
-at = "20:00"
-freeze = true
-allow = []
-
-[[gate]]
-at = "24:00"
-hard_stop = true
+[[milestone]]
+name = "submission"
+ship = "+24:00"
+freeze = "4:00"
+final = true
+features = []

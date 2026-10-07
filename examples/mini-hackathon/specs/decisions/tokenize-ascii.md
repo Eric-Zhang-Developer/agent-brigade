@@ -1,6 +1,6 @@
-# F01: Non-ASCII letters are separators
+# tokenize: Non-ASCII letters are separators
 
-- Date: 2026-01-10   Decided by: codex-1   Feature: F01
+- Date: 2026-01-10   Decided by: codex-1   Feature: tokenize
 - **Context:** the mission says "a–z"; `café` is ambiguous.
 - **Options:** A) treat é as a separator; B) Unicode letters.
 - **Choice:** A. It's exactly what the mission says, and the smaller change.
