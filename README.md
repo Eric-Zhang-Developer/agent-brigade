@@ -19,9 +19,9 @@ racing a hackathon deadline or trying to finally finish a side project.
 
 ## Choose a profile and a size
 
-| | **lite**: one agent, least ceremony | **full**: parallel agents, lanes, claims |
+| | **lite**: one agent, least ceremony | **full**: parallel agents, claims, a reporter |
 |---|---|---|
-| **hackathon**: a deadline, gates, an unbreakable demo | Solo hacker | A team of 2–4, agents running overnight |
+| **hackathon**: a deadline, milestones, an unbreakable demo | Solo hacker | A team of 2–4, agents running overnight |
 | **project**: continuity, `NOW.md`, milestones, one-way doors | Weekend side project | Side project with agents working while you sleep or are in class |
 
 You can switch later ([upgrading](docs/upgrading.md)), including turning a hackathon prototype into a maintained project.
@@ -41,7 +41,7 @@ neutral files (`AGENTS.md`, `.agents/`, `specs/`, CI and GitHub templates) and n
 3. Start each agent with: *"Read AGENTS.md and follow it exactly. Your worker name is `<name>`. Pick your next ready
    feature and never wait for a human."*
 4. Check in at checkpoints, in **one place, GitHub Issues**: filter `needs-human`, read the pinned Status, and merge
-   or trim the planner's `[PLAN]` PR.
+   or trim the planner's `plan:` PR.
 
 Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 
@@ -52,8 +52,12 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 - **Issues are the human's view.** Each feature spec gets an issue (a link, never a copy) that closes when the
   feature is done. Agents file `needs-human` issues for judgment calls, and take no default on `one-way-door` ones.
   The watchdog files `main-red`.
-- **The loop** (in the installed [AGENTS.md](template/parts/agents-common.md)): claim with a draft PR, build in a
-  worktree, pass CI, write a done note, merge. **Must** rules are enforced by checks (ownership, a green `main`, the
+- **Names people can read.** A feature's ID is its folder name (`specs/features/map-data/`), and PR titles are
+  Conventional Commits: `feat(map-data): ...`, `fix(map-data): ...`, `fix: ...`, `docs:`, `contract:`, `plan:`.
+  `specs/milestones.toml` says what ships when, in priority order, for both profiles; each milestone is also a
+  GitHub milestone, and `ship.py` turns a finished one into a one-page walkthrough.
+- **The loop** (in the installed [AGENTS.md](template/parts/agents-common.md)): pick the first ready feature, build
+  in a worktree (full size claims it with a draft PR first), pass CI, write a done note, merge. **Must** rules are enforced by checks (ownership, a green `main`, the
   freeze, no conflict markers or secrets). **Prefer** rules are engineering judgment (PR size, splitting along seams).
 
 ## What's in this repo
@@ -62,7 +66,7 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 |---|---|
 | `install.py` | Installs into a project, or switches its profile/size later |
 | `template/` | Exactly what gets installed: `common/` plus one profile overlay, and `parts/` that become `AGENTS.md` |
-| `template/common/.agents/scripts/` | `check_ownership` · `check_markers` · `check_gates` · `status` · `sync_issues` · `watchdog` (+ `verify_release` · `demo_snapshot` for hackathons). Stdlib Python, all tested |
+| `template/common/.agents/scripts/` | `check_ownership` · `check_markers` · `check_gates` · `status` · `sync_issues` · `ship` · `watchdog` (+ `verify_release` · `demo_snapshot` for hackathons). Stdlib Python, all tested |
 | `docs/` | Guides for people, never installed: [quickstart](docs/quickstart.md), [config reference](docs/config.md), [glossary](docs/glossary.md), [roles](docs/roles.md), [planner](docs/planner.md), [briefing](docs/briefing.md), [budget](docs/budget.md), [remote mode](docs/remote.md), [upgrading](docs/upgrading.md), [integrations](docs/integrations/) |
 | `docs/hackathon/` | [Overnight run](docs/hackathon/overnight.md), [preflight](docs/hackathon/preflight.md), [plan bake-off](docs/hackathon/plan-bakeoff.md), [judge agent](docs/hackathon/judge-agent.md), [demo snapshot](docs/hackathon/demo-snapshot.md), [pitch](docs/hackathon/pitch.md) |
 | `docs/project/` | [One-way doors](docs/project/one-way-doors.md), [weekly routine](docs/project/weekly.md), [budget](docs/project/budget.md) |
@@ -72,10 +76,10 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 
 | At ShellHacks | In the kit |
 |---|---|
-| Agents ran out of work every 10–30 min | The planner drafts the next batch into a `[PLAN]` PR, and blocked agents file an issue and switch tasks |
+| Agents ran out of work every 10–30 min | The planner drafts the next batch into a `plan:` PR, and blocked agents file an issue and switch tasks |
 | Sessions died; laptops ran out of RAM and disk | `watchdog.py` (heartbeats, restarts, resource alerts) + remote mode |
 | A human merged conflict markers into `main` | `check_markers.py` in the pre-commit hook **and** CI, plus `enforce_admins` |
-| An untested 1,191-line feature merged 4 min before the deadline | `check_gates.py`: a freeze enforced in CI |
+| An untested 1,191-line feature merged 4 min before the deadline | `check_gates.py`: the final milestone's freeze, enforced in CI |
 | The live demo throttled on a free-tier database | Production load test in preflight, `demo_snapshot.py`, `verify_release.py` |
 | The team couldn't explain the code to judges | A briefing and judge agent scheduled hours before judging |
 | What needed a human was scattered | GitHub Issues: `needs-human`, `one-way-door`, `main-red`, and a pinned Status |

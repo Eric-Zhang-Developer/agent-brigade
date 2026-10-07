@@ -17,15 +17,16 @@ the specs go stale before anyone builds them.
 > (run `python3 .agents/scripts/status.py --out -` first), every file in `specs/decisions/`, the open `needs-human` issues, and
 > `specs/context/` if it exists.
 > Draft just enough new features to bring ready + claimed to 2× max_parallel. For each one:
-> - copy `specs/features/_template/` to `specs/features/F<next>-<slug>/`, fill every section, and pick `owns`
->   prefixes that overlap nothing (run `check_ownership.py --lint-specs`)
+> - copy `specs/features/_template/` to `specs/features/<slug>/` (a short lowercase-kebab name), fill every
+>   section, and pick `owns` prefixes that overlap no in-flight feature (run `check_ownership.py --lint-specs`)
 > - size it as one reviewable PR, or plan it in parts split along logical seams
-> - tie it to a roadmap stage or milestone, and add its row to `specs/roadmap.md`
+> - add its slug to a milestone's `features` in `specs/milestones.toml`, in priority order (or leave it in the
+>   backlog and say why)
 > - turn answered `needs-human` issues and demo feedback into requirements. Never invent facts; cite the context file.
 > - add nothing on the roadmap's "Not doing" list. Add no one-way-door work without a decision record.
-> Open ONE PR titled `[PLAN] <date> batch of N` listing each feature in one line, and why it matters now. Never
+> Open ONE PR titled `plan: <date> batch of N` listing each feature in one line, and why it matters now. Never
 > merge it yourself.
 
 ## The human's side
-Review the `[PLAN]` PR in one pass. Delete the specs you don't want, edit what's wrong, then merge. Merging is the
+Review the `plan:` PR in one pass. Delete the specs you don't want, edit what's wrong, then merge. Merging is the
 approval: builders pick up the new features on their next run.

@@ -58,7 +58,7 @@ The database and host you demo on are a decision to make now, not mid-run.
 - [ ] Plan the fallback: `demo_snapshot.py` (`demo-snapshot.md`).
 
 ## 6. Launch
-1. In the launch commit, set `run_start` in `specs/gates.toml` and scale the gates to the event.
+1. In the launch commit, set `start` in `specs/milestones.toml` and scale the milestones to the event.
 2. Start the bootstrap agent first. Start the others after its done note lands.
 3. Start the watchdog if anyone's going to sleep (`docs/remote.md`).
 4. Write down who owns what:

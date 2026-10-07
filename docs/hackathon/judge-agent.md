@@ -24,5 +24,5 @@ ID so its report has an owner.
 > Write `reports/judge.md`. Never inflate: if something isn't verified, say so.
 
 ## After
-The team reads the questions out loud and practices the answers. Fixes go in as `[FIX-]` PRs before the freeze, or
+The team reads the questions out loud and practices the answers. Fixes go in as `fix(<slug>)` PRs before the freeze, or
 not at all.

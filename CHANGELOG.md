@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.3.0 (unreleased)
+
+Readable names and one deadline model, from Raze 2's first 37 PRs (27% of them process overhead) and a live check
+of v0.2 on a smoke-test repo. Schema 3: v0.2 projects follow "From schema 2" in `docs/upgrading.md`.
+- **The slug is the ID.** `specs/features/map-data/` is `map-data`: its done note, branch, decisions and PR scope.
+  No more F-numbers.
+- **PR titles are Conventional Commits:** `feat(<slug>)`, `fix(<slug>)` (also `refactor`, `perf`, `test`, `chore`,
+  `style`), scope-less `fix:` for shared code with no spec, `docs:` for status edits like `NOW.md`, `contract:`,
+  `plan:`, `revert:` (or GitHub's `Revert "..."`). `feat` on a done feature points you to `fix`.
+- **One `specs/milestones.toml` for both profiles** replaces `gates.toml`, `phase`, stages and `cut: ok|never`.
+  Order comes from each milestone's `features`; specs in no milestone are backlog. Hackathons use `start` plus
+  `+H:MM` offsets and a final milestone with a report window and hard stop. Bootstrap-first is a built-in rule.
+- **Ownership is exclusive only while a feature is in flight**, and shipped specs still scope fixes, so a long-lived
+  app can extend old code without a contract PR.
+- **GitHub milestones:** `sync_issues.py` creates one per milestone (with its due date), files each feature's issue
+  on it, and matches issues by a hidden `<!-- spec: <slug> -->` line, so people can retitle them.
+- **`ship.py <milestone>`** moves a finished milestone's specs to `specs/shipped/<milestone>/` and writes a
+  one-page release walkthrough from the done notes, which now use fixed headings.
+- **Status reports loop health:** PRs by type, process overhead, median time open, most-fixed features, reverts,
+  minutes `main` was red. Also new: Missed and Backlog sections.
+- **Lite has no claims:** open the PR when the work is ready. The merge step waits for CI
+  (`gh pr checks --watch && gh pr merge ...`). "One feature at a time" is now a Prefer rule.
+- **Schema stamp:** `.agents/config.toml` carries `schema = 3`; the installer stops on an older one until
+  `--upgrade`.
+- Fixes from the v0.2 live check: the pre-commit hook no longer writes `__pycache__` (it got committed and failed
+  the ownership check), installs ignore it, status no longer reports its own in-progress run as `main` CI, the
+  install prints the command that makes `ci` required, and the workflow moves to the Node 24 actions.
+
 ## v0.2.0 (unreleased)
 
 Lessons from the first real install (Raze 2), where the kit took 134 files to add ~8 of the project's own.

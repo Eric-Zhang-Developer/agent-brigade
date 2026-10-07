@@ -17,13 +17,14 @@ Any folder works. The kit stays there; projects only get what they run. You need
 | A side project, one agent | `... --profile project --lite ~/code/my-project` |
 | A side project, several agents while you sleep | `... --profile project --full ~/code/my-project` |
 
-That writes about 20 files: `AGENTS.md`, `CLAUDE.md`, `.agents/` (settings, scripts, pre-commit hook), `specs/`
+That writes about 25 files: `AGENTS.md`, `CLAUDE.md`, `.agents/` (settings, scripts, pre-commit hook), `specs/`
 templates, `changes/`, CI and the GitHub templates. None of them mention the kit. Re-running never overwrites
 your edits.
 
 ## 3. Write the specs (the part that matters)
 Fill in `specs/mission.md`, `tech-stack.md` and `roadmap.md`, then one spec per feature in
-`specs/features/F<n>-<slug>/spec.md` (copy `_template/`). An agent can draft these with you; you approve them.
+`specs/features/<slug>/spec.md` (copy `_template/`; the folder name is the feature's ID), and list the slugs in
+`specs/milestones.toml` in priority order. An agent can draft these with you; you approve them.
 - Hackathon: run the plan bake-off first (`docs/hackathon/plan-bakeoff.md`).
 - Project: write `NOW.md`, and list your one-way doors (`docs/project/one-way-doors.md`).
 
@@ -39,4 +40,4 @@ required check on `main` (`docs/hackathon/preflight.md` has the commands). Then 
 
 ## 5. Check in at checkpoints, not constantly
 Open the repo's **Issues**: filter `needs-human`, read the pinned **Status**, and merge or trim the planner's
-`[PLAN]` PR. `python3 .agents/scripts/watchdog.py` keeps the run alive while you're away (`docs/remote.md`).
+`plan:` PR. `python3 .agents/scripts/watchdog.py` keeps the run alive while you're away (`docs/remote.md`).
