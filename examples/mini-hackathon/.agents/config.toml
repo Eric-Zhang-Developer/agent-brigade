@@ -1,0 +1,13 @@
+# Example only (kit repo). A toy project ("wordfreq") showing a full hackathon run. See README.md.
+profile = "hackathon"
+size = "full"
+
+[ownership]
+frozen = [".agents/", "wordfreq/__init__.py", "tests/golden/", "tests/test_loop.py"]
+
+[agents]
+max_parallel = 2
+reporter = "claude-1"
+
+[pr]
+warn_lines = 200

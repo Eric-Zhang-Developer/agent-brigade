@@ -1,0 +1,14 @@
+# The kit's own development settings (used by its CI). Projects get theirs from install.py.
+profile = "project"
+size = "full"
+
+[paths]
+specs = "dev/specs"
+changes = "dev/changes"
+reports = "dev/reports"
+
+[ownership]
+frozen = ["AGENTS.md", "CLAUDE.md", ".agents/", ".github/"]
+
+[pr]
+warn_lines = 0

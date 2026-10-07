@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 EXAMPLE = Path(__file__).resolve().parents[1]
-SCRIPTS = EXAMPLE.parents[1] / "core" / "scripts"
+SCRIPTS = EXAMPLE.parents[1] / "template" / "common" / ".agents" / "scripts"
 
 
 class Milestone(unittest.TestCase):
@@ -41,10 +41,9 @@ class Milestone(unittest.TestCase):
         self.assertEqual(r.returncode, 1)
         self.assertIn("cut list", r.stdout)
 
-    def test_status_flags_the_one_way_door(self):
-        r = subprocess.run([sys.executable, str(SCRIPTS / "status_report.py"), "--root", str(self.root), "--offline",
+    def test_status_shows_the_milestone(self):
+        r = subprocess.run([sys.executable, str(SCRIPTS / "status.py"), "--root", str(self.root), "--offline",
                             "--out", "-", "--now", "2026-10-20T12:00:00+00:00"], capture_output=True, text=True)
-        self.assertIn("How should tags be stored? **one-way door**", r.stdout)
         self.assertIn("milestone first-ship ships 2026-11-01 (12 days)", r.stdout)
 
 
