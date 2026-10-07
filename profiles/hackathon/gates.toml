@@ -1,0 +1,29 @@
+# Hackathon time gates. Enforced by core/scripts/check_gates.py in CI. Format: core/docs/config.md
+# Defaults assume a 36-hour event. Scale every `at` to yours, and set run_start in the launch commit.
+run_start = ""          # SET IN THE LAUNCH COMMIT, e.g. "2026-10-10T09:00:00-04:00". Empty = gates off.
+
+[[gate]]
+at = "0:00"
+only = ["F00"]          # bootstrap first; add your reporter's ID too
+
+[[gate]]
+at = "1:00"             # a gate with no rule = open: any ready feature may run
+
+[[gate]]
+at = "20:00"
+no_new_phase = 3        # late-phase ideas that haven't started yet don't start
+
+[[gate]]
+at = "30:00"
+freeze = true           # no new features: FIX, REVERT and contract PRs only
+allow = []              # e.g. your reporter's ID
+max_lines = 150         # small, reviewable fixes only
+
+[[gate]]
+at = "34:00"
+report = true           # reporter writes reports/final.md and commits STOP
+allow = []
+
+[[gate]]
+at = "35:30"
+hard_stop = true

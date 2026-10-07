@@ -1,0 +1,10 @@
+#!/bin/sh
+# agent-brigade pre-commit: the same checks CI runs, for humans too.
+# Installed by init.py via `git config core.hooksPath core/hooks`.
+# `git commit --no-verify` skips it in an emergency; CI still runs the same checks on the PR.
+root=$(git rev-parse --show-toplevel) || exit 1
+python3 "$root/core/scripts/check_markers.py" --root "$root" --staged || exit 1
+python3 "$root/core/scripts/check_ownership.py" --root "$root" --lint-specs >/dev/null || {
+  python3 "$root/core/scripts/check_ownership.py" --root "$root" --lint-specs
+  exit 1
+}
