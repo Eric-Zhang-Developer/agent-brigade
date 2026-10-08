@@ -143,6 +143,14 @@ class Install(unittest.TestCase):
         self.assertIn("From a v0.1 install", r.stdout + r.stderr)
         self.assertFalse((self.root / "AGENTS.md").exists())
 
+    def test_old_python_gets_one_clear_line(self):
+        fake = ("import runpy, sys; sys.version_info = (3, 9, 6, 'final', 0); sys.argv = ['install.py']; "
+                f"runpy.run_path({str(INSTALL)!r}, run_name='__main__')")
+        r = subprocess.run([sys.executable, "-c", fake], capture_output=True, text=True)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("install: needs Python 3.11+", r.stderr)
+        self.assertNotIn("Traceback", r.stderr)
+
     def test_refuses_to_install_into_the_kit(self):
         r = install(helpers.KIT, "--profile", "project")
         self.assertEqual(r.returncode, 2)

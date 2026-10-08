@@ -4,6 +4,10 @@ A template for building with AI coding agents from a shared spec: agents work fo
 the decisions at checkpoints, and the rules are enforced by checks, not memory. Markdown protocol, Python
 standard-library scripts, any agent tool.
 
+```bash
+npx agent-brigade --profile project --lite      # in your repo; or --profile hackathon, --full for parallel agents
+```
+
 Like a kitchen brigade: the chef writes the menu (the spec), each cook owns a station (`owns`), every plate goes
 through the pass (a pull request), and nothing leaves without tasting (CI).
 
@@ -29,11 +33,12 @@ You can switch later ([upgrading](docs/upgrading.md)), including turning a hacka
 ## Quickstart (5 minutes)
 
 ```bash
-git clone https://github.com/Eric-Zhang-Developer/agent-brigade ~/tools/agent-brigade   # once
-python3 ~/tools/agent-brigade/install.py --profile hackathon --full ~/code/my-project     # or: --profile project --lite
+cd ~/code/my-project
+npx agent-brigade --profile hackathon --full     # or: --profile project --lite
 ```
-Works on a new or an existing repo. Needs Python 3.11+ and git; `gh` turns on issues. The project gets about 20
-neutral files (`AGENTS.md`, `.agents/`, `specs/`, CI and GitHub templates) and nothing that names this kit. Then:
+Works on a new or an existing repo. Needs Python 3.11+, git and Node (or clone this repo and run
+`python3 install.py` instead); `gh` turns on issues. The project gets about 25 neutral files (`AGENTS.md`,
+`.agents/`, `specs/`, CI and GitHub templates) and nothing that names this kit. Then:
 1. Fill in `specs/mission.md`, `tech-stack.md`, `roadmap.md`, and one spec per feature (copy
    `specs/features/_template/`). Hackathon: run the [plan bake-off](docs/hackathon/plan-bakeoff.md) first.
 2. Push. The first push to `main` creates the labels, one issue per feature, and a pinned **Status** issue. Make
@@ -65,6 +70,7 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 | Path | What |
 |---|---|
 | `install.py` | Installs into a project, or switches its profile/size later |
+| `package.json`, `bin/agent-brigade.js` | The `npx agent-brigade` wrapper: finds Python 3.11+ and runs `install.py` |
 | `template/` | Exactly what gets installed: `common/` plus one profile overlay, and `parts/` that become `AGENTS.md` |
 | `template/common/.agents/scripts/` | `check_ownership` · `check_markers` · `check_gates` · `status` · `sync_issues` · `ship` · `watchdog` (+ `verify_release` · `demo_snapshot` for hackathons). Stdlib Python, all tested |
 | `docs/` | Guides for people, never installed: [quickstart](docs/quickstart.md), [config reference](docs/config.md), [glossary](docs/glossary.md), [roles](docs/roles.md), [planner](docs/planner.md), [briefing](docs/briefing.md), [budget](docs/budget.md), [remote mode](docs/remote.md), [upgrading](docs/upgrading.md), [integrations](docs/integrations/) |
@@ -95,11 +101,10 @@ tooling; check the rules, and disclose it. Suggested line for your submission:
 ## Credits
 
 Built from the protocol the ShellHacks 2026 "Common Ground" team ran on Sperry Tech's Gridlock track:
-[Daniel](https://github.com/<daniel-handle>), [Kyro](https://github.com/<kyro-handle>),
-[Sharan](https://github.com/<sharan-handle>) and [Eric Zhang](https://github.com/Eric-Zhang-Developer).
+[Daniel](https://github.com/fradicus), [Kiro](https://github.com/kirolosmaikel-ops),
+[Sharan](https://github.com/iKnow24) and [Eric Zhang](https://github.com/Eric-Zhang-Developer).
 The spec-driven method is adapted from the DeepLearning.AI × JetBrains spec-driven development course.
 
 ## License
 
-No license yet. Until one is added, all rights are reserved, which means others can't legally reuse this code.
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+[MIT](LICENSE). To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).

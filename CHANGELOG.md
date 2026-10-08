@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.0 (unreleased)
+
+Easier to start, ready to go public.
+- **`npx agent-brigade --profile ... [--lite|--full]`** installs from npm. A 15-line Node wrapper finds Python
+  3.11+ and runs the bundled `install.py`; all logic stays in Python. CI installs a project from the packed tarball.
+- **Python older than 3.11 gets one clear line, not a traceback**, from the installer and every script. macOS ships
+  3.9. The pre-commit hook looks for `python3.14` down to `python3.11`, and skips with a note if none is found (CI
+  runs the same checks).
+- The README and quickstart lead with the one command.
+- The kit's `dev/` keeps only its current mission, stack, decisions and milestone; the v0.1 notes, report, inbox
+  and the v0.2/v0.3 plans are in git history. `.notes/` is ignored for private notes.
+
 ## v0.3.0 (unreleased)
 
 Readable names and one deadline model, from Raze 2's first 37 PRs (27% of them process overhead) and a live check

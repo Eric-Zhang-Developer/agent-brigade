@@ -2,20 +2,24 @@
 
 About five minutes of commands, then the time it takes to write a good spec.
 
-## 1. Get the kit once
-```bash
-git clone https://github.com/Eric-Zhang-Developer/agent-brigade ~/tools/agent-brigade
-```
-Any folder works. The kit stays there; projects only get what they run. You need Python 3.11+ and git. `gh`
-(GitHub CLI) is what turns issues on.
+## 1. Check the tools
+Python 3.11+ (macOS ships 3.9: `brew install python`), git, and Node for `npx`. `gh` (GitHub CLI) is what turns
+issues on.
 
 ## 2. Install into a project (new or existing)
+From the project's folder:
+
 | You are… | Run |
 |---|---|
-| A team at a hackathon, several agents in parallel | `python3 ~/tools/agent-brigade/install.py --profile hackathon --full ~/code/my-project` |
-| Solo at a hackathon, one agent | `... --profile hackathon --lite ~/code/my-project` |
-| A side project, one agent | `... --profile project --lite ~/code/my-project` |
-| A side project, several agents while you sleep | `... --profile project --full ~/code/my-project` |
+| A team at a hackathon, several agents in parallel | `npx agent-brigade --profile hackathon --full` |
+| Solo at a hackathon, one agent | `npx agent-brigade --profile hackathon --lite` |
+| A side project, one agent | `npx agent-brigade --profile project --lite` |
+| A side project, several agents while you sleep | `npx agent-brigade --profile project --full` |
+
+No Node? Clone the kit once and run the same thing with Python:
+`git clone https://github.com/Eric-Zhang-Developer/agent-brigade ~/tools/agent-brigade`, then
+`python3 ~/tools/agent-brigade/install.py --profile project --lite`. Either way, pass a folder at the end to
+install somewhere other than the current one.
 
 That writes about 25 files: `AGENTS.md`, `CLAUDE.md`, `.agents/` (settings, scripts, pre-commit hook), `specs/`
 templates, `changes/`, CI and the GitHub templates. None of them mention the kit. Re-running never overwrites

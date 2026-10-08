@@ -29,7 +29,8 @@ weekend side project to a 4-person, 36-hour sprint. Either profile works with on
    are held to the same rules as agents.
 3. **Honest by default.** Never invent data. Every number traces to a source. Unknowns stay visible. Say what isn't
    done.
-4. **Fast to start.** `init.py` gets a fresh clone ready in under 10 minutes for either profile.
+4. **Fast to start.** `npx agent-brigade` (or `python3 install.py`) sets up a new or existing repo in under 10
+   minutes, for either profile.
 5. **Ships things.** Deadlines, milestones and cut lists exist so work reaches done.
 6. **Understood by its humans.** Briefings and judge-style reviews close the gap between what agents built and what
    people can explain.
@@ -41,9 +42,9 @@ weekend side project to a 4-person, 36-hour sprint. Either profile works with on
 - **Stack-agnostic.** Protocol and templates are Markdown. Scripts are Python 3.11+, standard library only, with
   config via `tomllib`.
 - **Harness-agnostic.** Core files never require a specific agent tool. Tool-specific notes live only in
-  `core/docs/integrations/`.
-- **One core, two profiles.** Shared behavior lives in `core/` and mode-specific behavior in `profiles/`. No
-  duplicated logic.
+  `docs/integrations/`.
+- **One core, two profiles.** Shared behavior lives in `template/common/` and mode-specific behavior in
+  `template/<profile>/`. No duplicated logic.
 - **Plain language.** Readable by a second-time hacker. Jargon gets a one-line definition on first use.
 - **No invented facts** in docs or examples: no fake metrics, dates or testimonials. Examples use a toy domain and
   say so.

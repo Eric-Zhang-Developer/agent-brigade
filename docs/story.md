@@ -27,9 +27,6 @@ The win hid a lot of cracks.
 What worked was the spec, the ownership rules, and a test built from the sponsor's own example. What broke was
 everything around the agents: every part that still depended on a person being awake.
 
-[OPTIONAL: I'd spent a long job search hearing no. That weekend was the first time my work got to speak for itself,
-and I wanted to keep what made that possible.]
-
 ## The other half of the problem
 
 The same gap shows up in personal projects, just slower. There's no deadline, so nothing ships. Context fades
@@ -59,5 +56,6 @@ tooling, the same as your editor setup.
 
 ## Thanks
 
-To my ShellHacks teammates, [Daniel], [Kyro] and [Sharan], who built the first version of this with me under
-pressure, and to the Sperry Tech team for a problem worth solving.
+To my ShellHacks teammates, [Daniel](https://github.com/fradicus), [Kiro](https://github.com/kirolosmaikel-ops) and
+[Sharan](https://github.com/iKnow24), who built the first version of this with me under pressure, and to the Sperry
+Tech team for a problem worth solving.

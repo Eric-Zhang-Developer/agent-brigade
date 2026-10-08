@@ -45,3 +45,12 @@ jobs:
             python3 -m unittest discover -s "$ex" -t "$ex" -v
             echo "::endgroup::"
           done
+
+      - name: npm package installs a working project
+        run: |
+          npm pack --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/proj" && cd "$RUNNER_TEMP/proj" && git init -q
+          # --package: given a bare absolute path, npx tries to execute the tarball instead of installing it
+          npx --yes --package "$(ls "$RUNNER_TEMP"/agent-brigade-*.tgz)" agent-brigade --profile project --lite
+          python3 .agents/scripts/check_ownership.py --lint-specs
+          python3 .agents/scripts/status.py --offline --out - > /dev/null

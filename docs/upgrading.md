@@ -1,13 +1,14 @@
 # Upgrading
 
-Re-run the installer. It refreshes `.agents/scripts` and `.agents/hooks`, switches `profile`/`size` in
-`.agents/config.toml`, and adds any missing files. It never overwrites `AGENTS.md`, `specs/` or `NOW.md`, so pass
+Re-run the installer (`npx agent-brigade@latest ...`, or `python3 install.py` from a clone). It refreshes
+`.agents/scripts` and `.agents/hooks`, switches `profile`/`size` in `.agents/config.toml`, and adds any missing
+files. It never overwrites `AGENTS.md`, `specs/` or `NOW.md`, so pass
 `--overwrite-agents` if you want the rules regenerated for a new profile or size. If the project's `schema` (in
 `.agents/config.toml`) is older than the kit's, the installer stops and names the section below to follow first.
 
 ## Lite → full (more agents)
 ```bash
-python3 ~/tools/agent-brigade/install.py --profile <same> --full --overwrite-agents .
+npx agent-brigade@latest --profile <same> --full --overwrite-agents .
 ```
 Then raise `[agents].max_parallel`, name a `reporter`, set `assignee` on features, and check that no two features' `owns`
 overlap (`.agents/scripts/check_ownership.py --lint-specs`). Start the watchdog if you'll be away.
@@ -15,7 +16,7 @@ overlap (`.agents/scripts/check_ownership.py --lint-specs`). Start the watchdog 
 ## Hackathon prototype → maintained project
 The weekend's over and you want to keep going. Keep the repo: your specs, decisions and done notes are the context.
 ```bash
-python3 ~/tools/agent-brigade/install.py --profile project --lite --overwrite-agents .
+npx agent-brigade@latest --profile project --lite --overwrite-agents .
 ```
 This adds `NOW.md` and `specs/review-paths.toml`. Then:
 1. **Relax the clock.** In `specs/milestones.toml`, clear `start`, drop the event's milestones, and set a first
