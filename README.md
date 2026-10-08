@@ -101,11 +101,10 @@ tooling; check the rules, and disclose it. Suggested line for your submission:
 ## Credits
 
 Built from the protocol the ShellHacks 2026 "Common Ground" team ran on Sperry Tech's Gridlock track:
-[Daniel](https://github.com/<daniel-handle>), [Kyro](https://github.com/<kyro-handle>),
-[Sharan](https://github.com/<sharan-handle>) and [Eric Zhang](https://github.com/Eric-Zhang-Developer).
+[Daniel](https://github.com/fradicus), [Kiro](https://github.com/kirolosmaikel-ops),
+[Sharan](https://github.com/iKnow24) and [Eric Zhang](https://github.com/Eric-Zhang-Developer).
 The spec-driven method is adapted from the DeepLearning.AI × JetBrains spec-driven development course.
 
 ## License
 
-No license yet. Until one is added, all rights are reserved, which means others can't legally reuse this code.
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+[MIT](LICENSE). To contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).

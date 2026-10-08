@@ -59,5 +59,6 @@ tooling, the same as your editor setup.
 
 ## Thanks
 
-To my ShellHacks teammates, [Daniel], [Kyro] and [Sharan], who built the first version of this with me under
-pressure, and to the Sperry Tech team for a problem worth solving.
+To my ShellHacks teammates, [Daniel](https://github.com/fradicus), [Kiro](https://github.com/kirolosmaikel-ops) and
+[Sharan](https://github.com/iKnow24), who built the first version of this with me under pressure, and to the Sperry
+Tech team for a problem worth solving.

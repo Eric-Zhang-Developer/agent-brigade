@@ -14,7 +14,7 @@ Settled 2026-10-06 in planning and kept current since. Each row says how to undo
 | D8 | `NOW.md` | Listed in `[ownership].open`, so any PR may edit it. In `full` size only the lead session updates it, to avoid conflicts. Feature agents put state in their done notes. | Make it a frozen path |
 | D9 | Example domain | A toy, clearly labeled (for example a word-frequency CLI). Never anything shaped like a real hackathon project. | none |
 | D10 | Commits | No `Co-Authored-By` or other trailers (Eric's standing rule). | none |
-| D11 | License | None for now (Eric, 2026-10-06). The README says so. Choosing one is Eric's call before the repo goes public. | Add a LICENSE file |
+| D11 | License | MIT (Eric, 2026-10-08), chosen before going public. | Relicense (needs every contributor's agreement) |
 | D12 | Repo | `Eric-Zhang-Developer/agent-brigade`, private while it's being built. Eric flips it public. | none |
 
 ## Ambiguity rules (when the spec, your Defaults and this table are all silent)
