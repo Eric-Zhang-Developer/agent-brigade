@@ -1,5 +1,10 @@
 """Shared helpers for the .agents scripts: config, spec front matter, git, gh. Stdlib only."""
 
+import sys
+
+if sys.version_info < (3, 11):  # tomllib; checked first so an older python3 gets this line, not a traceback
+    sys.exit(f"{sys.argv[0].rsplit('/', 1)[-1]}: needs Python 3.11+, found {sys.version.split()[0]} (macOS: brew install python)")
+
 import argparse
 import copy
 import json

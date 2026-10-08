@@ -15,12 +15,16 @@ AGENTS.md). Labels and issues are created by CI on the first push to main.
 stops and points at the steps in docs/upgrading.md; re-run with --upgrade once they're done.
 """
 
+import sys
+
+if sys.version_info < (3, 11):  # tomllib; checked first so an older python3 gets this line, not a traceback
+    sys.exit(f"install: needs Python 3.11+, found {sys.version.split()[0]} (macOS: brew install python)")
+
 import argparse
 import re
 import shutil
 import stat
 import subprocess
-import sys
 import tomllib
 from pathlib import Path
 
