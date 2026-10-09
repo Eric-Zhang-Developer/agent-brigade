@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.0 (unreleased)
+## v0.4.0 (2026-10-09)
 
 Easier to start, ready to go public.
 - **`npx agent-brigade --profile ... [--lite|--full]`** installs from npm. A 15-line Node wrapper finds Python
@@ -12,7 +12,7 @@ Easier to start, ready to go public.
 - The kit's `dev/` keeps only its current mission, stack, decisions and milestone; the v0.1 notes, report, inbox
   and the v0.2/v0.3 plans are in git history. `.notes/` is ignored for private notes.
 
-## v0.3.0 (unreleased)
+## v0.3.0 (not published; included in v0.4.0)
 
 Readable names and one deadline model, from Raze 2's first 37 PRs (27% of them process overhead) and a live check
 of v0.2 on a smoke-test repo. Schema 3: v0.2 projects follow "From schema 2" in `docs/upgrading.md`.
@@ -40,7 +40,7 @@ of v0.2 on a smoke-test repo. Schema 3: v0.2 projects follow "From schema 2" in 
   the ownership check), installs ignore it, status no longer reports its own in-progress run as `main` CI, the
   install prints the command that makes `ci` required, and the workflow moves to the Node 24 actions.
 
-## v0.2.0 (unreleased)
+## v0.2.0 (not published; included in v0.4.0)
 
 Lessons from the first real install (Raze 2), where the kit took 134 files to add ~8 of the project's own.
 - **Install from outside:** `install.py --profile ... TARGET` writes about 20 neutral files into a project, new or
@@ -56,7 +56,7 @@ Lessons from the first real install (Raze 2), where the kit took 134 files to ad
 - Layout: `core/` + `profiles/` became `template/` (what's installed) and `docs/` (guides for people).
   `kit.toml` became `.agents/config.toml`.
 
-## v0.1.0 (unreleased)
+## v0.1.0 (not published; included in v0.4.0)
 
 First version, generalized from the ShellHacks 2026 protocol.
 - Core loop (`core/docs/method.md`) and config reference (`core/docs/config.md`).
