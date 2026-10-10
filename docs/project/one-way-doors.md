@@ -6,7 +6,8 @@ decisions are expensive to undo once code and data depend on them. Agents never 
 ## The rule
 If your work needs one of these decided and there's no decision record for it:
 1. File a GitHub issue labelled `needs-human` and `one-way-door`, with the options and what each costs
-   to reverse. Write `Default taken: none: parked`.
+   to reverse. Write `Default taken: none: parked`. Give at least two genuinely different options (whole shapes,
+   not two versions of one); a lone option means nobody looked.
 2. Note the issue in your PR and switch to your next ready feature. At full size the watchdog closes a draft with
    no pushes after an hour; reopen it once the decision lands.
 3. A person decides, writes `specs/decisions/<slug>-<topic>.md`, and closes the issue with a link to it.

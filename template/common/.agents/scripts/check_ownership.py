@@ -79,7 +79,8 @@ def allowed(title: str, cfg: dict, specs: dict, shipped: dict, done: set, revert
     if kind == "contract":
         prefixes = frozen + [f"{sp}/"] + open_paths
     elif kind == "plan":
-        prefixes = [f"{sp}/features/", f"{sp}/shipped/", f"{sp}/milestones.toml", f"{sp}/roadmap.md"] + open_paths
+        prefixes = [f"{sp}/features/", f"{sp}/shipped/", f"{sp}/milestones.toml", f"{sp}/roadmap.md",
+                    f"{sp}/context/findings.md"] + open_paths
     elif kind == "revert":
         files = set(revert_files or [])
         if not files:

@@ -34,4 +34,8 @@ Every term the kit uses, in one line each.
 | `main` red | The latest CI run on `main` failed. Nobody merges except the fix. |
 | Heartbeat | A file each agent touches every loop, inside the repo's git folder so every worktree shares it. If it goes quiet, the watchdog alerts, and restarts that session if `[watchdog].restart` is set. |
 | Lite / full | The size dial: one agent with minimal ceremony, or parallel agents with claims. |
+| Sampling review | The weekly full-size routine where one agent reads the last few merged PRs and turns each mistake that happened twice into a structure, check, test or rule (`docs/project/weekly.md`). |
+| Findings queue | `specs/context/findings.md`: one line per bad pattern, appended instead of fixed; the planner turns repeated ones into specs. |
+| Gardener | The optional agent role that scans for bad patterns and appends them to the findings queue (`docs/roles.md`). |
+| Reviewer | The optional agent role that gives two different agent tools the same intent and rubric (`docs/review.md`) and keeps what both find. |
 | Briefing | `docs/briefing.md`: one page on the problem, architecture, honest numbers and what changed. |

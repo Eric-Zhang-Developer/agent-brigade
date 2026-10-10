@@ -97,7 +97,7 @@ What ships when, and in what order, is in `specs/milestones.toml`, not in the sp
 | `fix: ...` (no scope) | Shared code with no spec; same types | anything except `frozen`, `specs/` (decisions allowed), `changes/` and in-flight features' `owns` |
 | `docs: ...` | Status and prose | `open` paths, plus Markdown outside `specs/`, `changes/`, `frozen` and in-flight `owns` |
 | `contract: ...` | Contract change, additive only | `frozen` paths + `specs/` + `open` |
-| `plan: ...` | Planner's batch or a ship; a person merges it | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md`, `open` paths |
+| `plan: ...` | Planner's batch, a ship, or the findings queue; a person merges it | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md`, `specs/context/findings.md`, `open` paths |
 | `revert: ...` or `Revert "..."` | `git revert`, found by its "This reverts commit" line | exactly the reverted commits' files |
 
 `feat` on a feature whose done note is already on the base branch fails: use `fix(<slug>)`. A `!` after the type

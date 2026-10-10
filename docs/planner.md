@@ -25,9 +25,17 @@ the specs go stale before anyone builds them.
 > - turn answered `needs-human` issues and demo feedback into requirements. Never invent facts; cite the context file.
 > - cluster open `bug` issues left for the planner: several slightly different reports often share one root cause,
 >   so related ones become one spec that links them all, not one spec each.
-> - add nothing on the roadmap's "Not doing" list. Add no one-way-door work without a decision record.
+> - read `specs/context/findings.md` (if it exists) and cluster its lines. A pattern with two or more lines becomes
+>   one spec; delete those lines in the same PR. Leave single lines for next time.
+> - add nothing on the roadmap's "Not doing" list. Add no one-way-door work without a decision record; when you
+>   file one, give at least two genuinely different options (`docs/project/one-way-doors.md`).
 > Open ONE PR titled `plan: <date> batch of N` listing each feature in one line, and why it matters now. Never
 > merge it yourself.
+
+## Findings queue (full size, optional)
+`specs/context/findings.md` is where the gardener (`roles.md`) parks bad patterns instead of fixing each one: one line
+each, `- <date> <PR or file:line>: <the pattern>`, added in a `plan:` PR. Batching them here turns ten one-line fixes
+into one spec that fixes the cause.
 
 ## The human's side
 Review the `plan:` PR in one pass. Delete the specs you don't want, edit what's wrong, then merge. Merging is the
