@@ -52,7 +52,8 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 
 **Platforms:** Linux and macOS are tested in CI. Windows is best-effort: CI installs and runs the tests there too,
 but `[verify].command` and the watchdog's `restart`/`alert` commands run in `cmd.exe` with POSIX-quoted
-placeholders, a verifier's background processes aren't stopped, and the watchdog can't read free RAM.
+placeholders, a verifier's background processes aren't stopped, the watchdog can't read free RAM, and a stale
+watchdog lock file has to be deleted by hand.
 
 ## How it works
 

@@ -8,5 +8,5 @@ git hooks and `.github/` files, and one clear line instead of a traceback when g
 ## How to check it
 `cd tests && python3.11 -m unittest test_install test_no_gh`; the CI `platforms` job for macOS and Windows.
 ## Gaps
-Windows: `verify.py` and watchdog templates assume `sh`; no process-group cleanup; no free-RAM reading; the logged-out
+Windows: `verify.py` and watchdog templates assume `sh`; no process-group cleanup; no free-RAM reading; stale watchdog lock is manual; the logged-out
 gh stub test is POSIX-only. Issue #9 stays open for Eric.
