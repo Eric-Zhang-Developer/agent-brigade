@@ -91,6 +91,14 @@ class Status(helpers.RepoCase):
         self.assertTrue(review[0].startswith("- **Verifier not set up**"))
         self.assertEqual(review[-1], "- … and 5 more (see Done and Loop below)")
 
+    def test_review_first_puts_recent_work_before_long_done_work(self):
+        for slug, when in (("aaa-old", "2026-01-01T00:00:00"), ("zzz-new", "2026-10-01T00:00:00")):
+            helpers.write(self.root, {f"changes/{slug}.md": self.note("")})
+            with mock.patch.dict("os.environ", {"GIT_COMMITTER_DATE": when}):   # a squash merge's date
+                self.commit(slug, date=when)
+        review = self.build().split("## Review first\n")[1].split("\n\n")[0]
+        self.assertLess(review.index("zzz-new"), review.index("aaa-old"))
+
     def test_offline_in_progress_lists_only_unfinished_feature_branches(self):
         for b in ("v0.1.0", "v0.2", "beta", "alpha", "random"):
             helpers.sh(self.root, "git", "branch", b)

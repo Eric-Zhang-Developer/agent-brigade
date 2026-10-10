@@ -73,6 +73,14 @@ def review_first(root: Path, cfg: dict, done: set[str], checked: dict[str, str],
         out.append("- **Verifier not set up** (`[verify].command` is empty): every done feature counts as not verified")
     fixed = fix_counts(subjects(root))
     top_fixed = dict(fixed.most_common(3))
+    changes = cfg["paths"]["changes"].rstrip("/")
+    stamps = {}  # slug -> when its done note last changed, so recent work outranks long-done work
+    when = 0
+    for line in git(root, "log", "--format=@%ct", "--name-only", "-500", "--", f"{changes}/", check=False).splitlines():
+        if line.startswith("@"):
+            when = int(line[1:])
+        elif line.strip():
+            stamps.setdefault(Path(line).stem, when)  # newest first, so the first time seen is the latest
     rows = []
     for slug in sorted(done | set(top_fixed)):
         unverified = checked.get(slug) == "not verified"
@@ -80,8 +88,8 @@ def review_first(root: Path, cfg: dict, done: set[str], checked: dict[str, str],
         why = (["not verified"] if unverified else []) + ([f"gaps: {gap[:80]}"] if gap else []) + \
               ([f"fixed or reverted {top_fixed[slug]}×"] if slug in top_fixed else [])
         if why:
-            rows.append(((unverified, bool(gap), top_fixed.get(slug, 0)), f"- {slug}: " + "; ".join(why)))
-    rows.sort(key=lambda r: r[0], reverse=True)  # stable, so ties stay alphabetical
+            rows.append(((unverified, bool(gap), top_fixed.get(slug, 0), stamps.get(slug, 0)), f"- {slug}: " + "; ".join(why)))
+    rows.sort(key=lambda r: r[0], reverse=True)  # stable: ties (same flags and time) stay alphabetical
     room = limit - len(out)
     out += [line for _, line in rows[:room]]
     if len(rows) > room:
