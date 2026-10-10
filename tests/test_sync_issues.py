@@ -71,18 +71,19 @@ class Main(helpers.RepoCase):
             if args[:2] == ("repo", "view"):
                 return {"url": URL, "defaultBranchRef": {"name": "main"}}
             if args[:2] == ("label", "list"):
-                return [{"name": n} for n in sync_issues.LABELS if n != "needs-human"]
+                return [{"name": n} for n in sync_issues.LABELS if n not in ("needs-human", "bug", "needs-info")]
             return []
 
         with mock.patch.object(sync_issues, "gh_json", side_effect=fake_json), \
              mock.patch.object(sync_issues, "gh", side_effect=lambda root, *a: calls.append(a) or ok), \
              redirect_stdout(io.StringIO()):
             self.assertEqual(sync_issues.main(["--root", str(self.root)]), 0)
-        self.assertEqual(calls[0][:3], ("label", "create", "needs-human"))
-        self.assertEqual(calls[1], ("api", "-X", "POST", "repos/{owner}/{repo}/milestones", "-f", "title=v1",
+        self.assertEqual([c[:3] for c in calls[:3]],
+                         [("label", "create", n) for n in ("needs-human", "bug", "needs-info")])
+        self.assertEqual(calls[3], ("api", "-X", "POST", "repos/{owner}/{repo}/milestones", "-f", "title=v1",
                                     "-f", "due_on=2026-11-15T23:59:59Z"))
-        self.assertEqual(calls[2][:4], ("issue", "create", "--title", "Alpha"))
-        self.assertEqual(calls[2][-2:], ("--milestone", "v1"))
+        self.assertEqual(calls[4][:4], ("issue", "create", "--title", "Alpha"))
+        self.assertEqual(calls[4][-2:], ("--milestone", "v1"))
 
     def test_without_gh_says_so(self):
         out = io.StringIO()

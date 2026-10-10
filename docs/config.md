@@ -14,7 +14,7 @@ specs/                        mission, tech-stack, roadmap, features/_template, 
 specs/milestones.toml         what ships when (both profiles)
 NOW.md, specs/review-paths.toml   project only
 changes/                      done notes
-.github/workflows/ci.yml  .github/pull_request_template.md  .github/ISSUE_TEMPLATE/needs-human.md
+.github/workflows/ci.yml  .github/pull_request_template.md  .github/ISSUE_TEMPLATE/{needs-human,bug}.md
 ```
 
 ## `.agents/config.toml`
@@ -111,6 +111,8 @@ What ships when, and in what order, is in `specs/milestones.toml`, not in the sp
 | `main-red` | `watchdog.py` | `main` CI red past `main_red_minutes`; closed when green |
 | `contract-change` | agents | A frozen file needs an additive change |
 | `status` | `status.py --issue` | The one pinned Status issue, rewritten after every merge |
+| `bug` | people, via the bug template | Something doesn't work. Agents reproduce it twice on `origin/main` before fixing (`AGENTS.md`, Bug reports) |
+| `needs-info` | agents | A `bug` that couldn't be reproduced; the comment says what's missing |
 
 ## Other files
 | File | Format |

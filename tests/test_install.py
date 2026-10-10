@@ -43,10 +43,10 @@ class Install(unittest.TestCase):
         self.assertLess(time.monotonic() - start, 10)
         files = tracked_files(self.root)
         installed = [f for f in files if f not in ("app.py", ".gitignore")]
-        self.assertLessEqual(len(installed), 26, installed)  # v0.3 added ship.py, v1.0 verify.py
+        self.assertLessEqual(len(installed), 27, installed)  # v0.3 added ship.py, v1.0 verify.py and the bug template
         for rel in ("AGENTS.md", "CLAUDE.md", "NOW.md", ".agents/config.toml", ".agents/hooks/pre-commit",
                     ".agents/scripts/sync_issues.py", ".agents/scripts/ship.py", ".agents/scripts/verify.py", "specs/milestones.toml", ".github/workflows/ci.yml",
-                    ".github/ISSUE_TEMPLATE/needs-human.md", "changes/.gitkeep", "app.py"):
+                    ".github/ISSUE_TEMPLATE/needs-human.md", ".github/ISSUE_TEMPLATE/bug.md", "changes/.gitkeep", "app.py"):
             self.assertIn(rel, files)
         for absent in (".agents/scripts/verify_release.py", "specs/gates.toml", "README.md", "docs", "examples"):
             self.assertFalse(any(f.startswith(absent) for f in files), absent)
@@ -62,6 +62,7 @@ class Install(unittest.TestCase):
         self.assertIn("## Project rules", agents)
         self.assertIn("## Lite mode", agents)
         self.assertIn("No claim in lite", agents)
+        self.assertIn("## Bug reports", agents)
         self.assertNotIn("draft PR", agents)
         self.assertNotIn("__", agents)
         self.assertEqual(cfg["schema"], 3)

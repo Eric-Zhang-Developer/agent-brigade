@@ -28,6 +28,8 @@ LABELS = {
     "main-red": ("b60205", "main CI is failing"),
     "contract-change": ("5319e7", "A change to frozen shared files (a contract: PR)"),
     "status": ("0e8a16", "The pinned status report"),
+    "bug": ("d73a4a", "Something doesn't work; reproduce it on origin/main before fixing"),
+    "needs-info": ("c5def5", "A bug report that couldn't be reproduced; says what's missing"),
 }
 MARKER = re.compile(r"<!-- spec: ([a-z0-9-]+) -->")
 
