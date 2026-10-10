@@ -19,7 +19,7 @@ From the pstack review (`dev/specs/pstack-lessons.md`).
 - Missing or unauthenticated `gh`: one clear line, exit 1.
 
 ## Validation
-`python3 -m unittest tests.test_pr_ready`
+`python3 -m unittest discover -s tests -t tests -p test_pr_ready.py`
 
 ## Defaults
 Take the smaller, reversible option and log it in `dev/specs/decisions/<topic>.md`. Keep the installed `AGENTS.md` about one page.

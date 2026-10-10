@@ -30,6 +30,7 @@ Every term the kit uses, in one line each.
 | Walkthrough | `specs/shipped/<milestone>/README.md`, stitched from the done notes by `ship.py`: one page per release. |
 | Freeze | The window before a milestone ships when only its own features merge. In the final milestone the freeze also blocks `plan:`; from `report_before` only fixes, reverts, docs and `allow` merge; at ship nothing does. |
 | Golden test | A test built from a known worked example (often the sponsor's), so the core math can never silently drift. |
+| Merge-ready | Open, not a draft, no conflicts, no changes requested, no unresolved review threads, every check green. `pr_ready.py` checks it before an agent merges; green CI alone isn't enough. |
 | `main` red | The latest CI run on `main` failed. Nobody merges except the fix. |
 | Heartbeat | A file each agent touches every loop, inside the repo's git folder so every worktree shares it. If it goes quiet, the watchdog alerts, and restarts that session if `[watchdog].restart` is set. |
 | Lite / full | The size dial: one agent with minimal ceremony, or parallel agents with claims. |

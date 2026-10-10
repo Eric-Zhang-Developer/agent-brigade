@@ -173,5 +173,6 @@ All `.agents/scripts` take `--help` and `--root PATH`. Exit codes: `0` ok, `1` f
 | `ship.py` | `MILESTONE [--dry-run]` |
 | `watchdog.py` | `[--once] [--interval SECONDS] [--dry-run]` |
 | `verify.py` | `--slug SLUG [--worktree PATH]`: runs `[verify].command`, prints one line for the done note |
+| `pr_ready.py` | `[PR]`: one pass over GitHub's whole verdict before merging. Exit 0 ready · 1 gh missing or failed · 2 usage · 3 closed, merged or draft · 4 conflicts · 5 changes requested · 6 unresolved review threads · 7 failing checks · 8 pending checks. After pstack's [`watch-pr`](https://github.com/cursor/plugins/tree/main/pstack) |
 | `verify_release.py` (hackathon) | `--commit SHA [--url URL]` |
 | `demo_snapshot.py` (hackathon) | `--out DIR [--url URL]` |
