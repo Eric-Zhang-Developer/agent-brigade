@@ -17,6 +17,8 @@ if not out:
     sys.exit("gh: no fake for " + " ".join(sys.argv[1:]))
 print(out)
 """
+# Windows runs gh.exe, not a shebang script, so the stub can't answer there; the gh-missing test still runs.
+NO_STUB = unittest.skipIf(os.name == "nt", "the fake gh is a shebang script, which Windows can't run as `gh`")
 READY = {"number": 7, "url": "https://github.com/o/r/pull/7", "state": "OPEN", "isDraft": False,
          "mergeable": "MERGEABLE", "reviewDecision": "", "statusCheckRollup": [
              {"__typename": "CheckRun", "name": "test", "status": "COMPLETED", "conclusion": "SUCCESS"},
@@ -52,9 +54,11 @@ class PrReady(unittest.TestCase):
         self.assertEqual(rc, code, out)
         self.assertIn(text, out)
 
+    @NO_STUB
     def test_ready(self):
         self.assertVerdict({}, 0, "ready to merge")
 
+    @NO_STUB
     def test_each_blocker_has_its_own_exit_code(self):
         self.assertVerdict({"state": "MERGED"}, 3, "merged")
         self.assertVerdict({"state": "CLOSED"}, 3, "closed")
@@ -70,10 +74,12 @@ class PrReady(unittest.TestCase):
         self.assertVerdict({"statusCheckRollup": [{"context": "deploy", "state": "EXPECTED"}]}, 8, "pending")
         self.assertVerdict({"mergeable": "UNKNOWN"}, 8, "still checking for conflicts")   # not "ready" after main moved
 
+    @NO_STUB
     def test_skipped_and_neutral_checks_pass(self):
         rollup = [{"name": n, "status": "COMPLETED", "conclusion": c} for n, c in (("a", "SKIPPED"), ("b", "NEUTRAL"))]
         self.assertVerdict({"statusCheckRollup": rollup}, 0, "ready")
 
+    @NO_STUB
     def test_first_blocker_wins(self):
         everything = {"isDraft": True, "mergeable": "CONFLICTING", "reviewDecision": "CHANGES_REQUESTED",
                       "statusCheckRollup": [{"name": "x", "status": "COMPLETED", "conclusion": "FAILURE"}]}
