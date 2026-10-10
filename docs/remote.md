@@ -26,8 +26,12 @@ git clone <your repo> ~/work/app && cd ~/work/app
 4. Run the watchdog in its own session: `tmux new -d -s watchdog 'python3 .agents/scripts/watchdog.py'`.
 
 ## Honest limits
-- The watchdog only restarts what your `restart` template knows how to restart, and it detects a dead session by
-  a stale heartbeat, so an agent that's alive but stuck looks the same as a dead one.
+- The watchdog only restarts what your `restart` template knows how to restart. It detects a dead session by a
+  stale heartbeat, and a stuck one by its worktree: a fresh heartbeat with no new commit and no file change for
+  `stuck_minutes` gets one alert, never a restart, because a stuck agent may still be thinking. Restarts stop at
+  `max_restarts` per worker per hour, so a session that dies on start alerts instead of looping.
+- Only one watchdog runs per repo: a second exits 1 while `<git common dir>/watchdog.pid` names a live process.
+  On Windows it can't check the pid, so delete a stale `watchdog.pid` by hand.
 - It can't fix an exhausted rate limit. It alerts, and `budget.md` is the plan.
 - Keep secrets in the VM's environment or a secrets manager, never in the repo or the launch prompt.
 

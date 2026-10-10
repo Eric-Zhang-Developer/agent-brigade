@@ -53,6 +53,8 @@ ignore = []
 
 [watchdog]
 heartbeat_minutes = 20
+stuck_minutes = 60             # alive but no commit or file change: alert only
+max_restarts = 2               # per worker per rolling hour; then alert instead
 stale_claim_minutes = 45
 close_claim_minutes = 60
 main_red_minutes = 20
@@ -122,6 +124,7 @@ What ships when, and in what order, is in `specs/milestones.toml`, not in the sp
 | `specs/shipped/<milestone>/` | Written by `ship.py`: the milestone's done specs plus `README.md`, the release walkthrough. |
 | `STOP` (repo root, on `main`) | Exists = every agent stops at its next check (they `git fetch`). The watchdog stops once `STOP` is in its own checkout. |
 | `<git common dir>/agent-heartbeats/<worker>` | Touched by each agent every loop (first line: its worktree path). Shared by all worktrees; never committed. |
+| `<git common dir>/watchdog.pid`, `watchdog-state.json` | The running watchdog's pid (a second watchdog exits 1 while it's alive) and its alert/restart memory, written atomically. |
 
 ## `specs/milestones.toml` (both profiles)
 Agents pick the first ready feature in file order: milestones top to bottom, skipping ones whose ship time has
