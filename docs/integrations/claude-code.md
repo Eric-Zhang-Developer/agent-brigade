@@ -4,8 +4,8 @@
   rules.
 - **Long runs:** auto-accept (or a permissions allowlist) removes prompt waits. Its looping and scheduling
   features (for example `/loop`) can keep a session picking work, but the kit's loop works without them, because
-  the next task always comes from the roadmap.
-- **One session per worktree:** `cd ../app-f03 && claude`.
+  the next task always comes from `specs/milestones.toml`.
+- **One session per worktree:** `cd ~/.worktrees/<repo>/<slug> && claude`.
 - **Restart template** (in tmux; `--continue` resumes the most recent conversation in that folder):
   ```toml
   restart = "tmux kill-session -t {worker}; tmux new -d -s {worker} -c {worktree} 'claude --continue'"

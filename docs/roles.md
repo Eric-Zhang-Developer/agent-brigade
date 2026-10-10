@@ -17,7 +17,7 @@ At ShellHacks, people mostly stopped writing code and started writing decisions.
 |---|---|---|
 | **Builder** | The loop in `AGENTS.md`: claim (full size), build, check, done note, merge | Continuous |
 | **Planner** | Reads status, decisions and `needs-human` issues; drafts specs in a `plan:` PR (`planner.md`) | Hourly (hackathon) / weekly (project) |
-| **Reporter** | `status.py --issue`, stale-claim comments, final report | Every 30 min (hackathon) / per session (project) |
+| **Reporter** | `status.py --issue`, final report (stale claims: `watchdog.py`) | Every 30 min (hackathon) / per session (project) |
 | **Judge** | Scores the live build like a judge, writes the 5 hardest questions (`docs/hackathon/judge-agent.md`) | Hours before judging |
 | **Briefer** | Keeps `docs/briefing.md` current (`briefing.md`) | Before judging / weekly |
 

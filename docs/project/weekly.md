@@ -5,8 +5,8 @@ icebox. Agents do the prep; you decide.
 
 ## 1. Agents prep (run before you sit down)
 > Read AGENTS.md. Then:
-> 1. `python3 .agents/scripts/status.py` (the status report).
-> 2. **Briefing:** rewrite `docs/briefing.md` (`docs/briefing.md`): what changed this week and why, honest
+> 1. `python3 .agents/scripts/status.py --out -` (the status report).
+> 2. **Briefing:** rewrite `docs/briefing.md` in its own `docs:` PR (prompt: the kit's docs/briefing.md): what changed this week and why, honest
 >    numbers, what isn't done.
 > 3. **Planner:** draft next week's features into one `plan:` PR (`docs/planner.md`), sized to what got
 >    done this week, aimed at the next milestone.

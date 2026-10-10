@@ -1,6 +1,20 @@
-# The kit's own milestone. No hard date (Eric, 2026-10-06), so no freeze applies.
+# The kit's own 1.0 milestone. No date yet (Eric sets one: issue "Target date for v1.0.0"), so no freeze applies.
+# One spec per item in dev/specs/features/; a feature is done when dev/changes/<slug>.md is on main.
 [[milestone]]
-name = "v0.3.0"
+name = "v1.0.0"
 ship = ""
-features = []
-cut = []
+features = [
+  "truth-pass",
+  "stability-contract",
+  "upgrade-tests",
+  "verifier-slot",
+  "verifier-status",
+  "bug-intake",
+  "sampling-review",
+  "findings-queue",
+  "cross-platform",
+  "quickstart-rehearsal",
+  "readme-1-0",
+  "release-checklist",
+]
+cut = ["findings-queue", "cross-platform"]   # proposed: cut these first if 1.0 runs long

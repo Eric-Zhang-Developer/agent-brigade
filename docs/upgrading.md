@@ -11,14 +11,15 @@ files. It never overwrites `AGENTS.md`, `specs/` or `NOW.md`, so pass
 npx agent-brigade@latest --profile <same> --full --overwrite-agents .
 ```
 Then raise `[agents].max_parallel`, name a `reporter`, set `assignee` on features, and check that no two features' `owns`
-overlap (`.agents/scripts/check_ownership.py --lint-specs`). Start the watchdog if you'll be away.
+overlap (`python3 .agents/scripts/check_ownership.py --lint-specs`). Start the watchdog if you'll be away.
 
 ## Hackathon prototype → maintained project
 The weekend's over and you want to keep going. Keep the repo: your specs, decisions and done notes are the context.
 ```bash
 npx agent-brigade@latest --profile project --lite --overwrite-agents .
 ```
-This adds `NOW.md` and `specs/review-paths.toml`. Then:
+This adds `NOW.md` and `specs/review-paths.toml`. It only rewrites `profile` and `size` in
+`.agents/config.toml`, so set `open = ["NOW.md"]` (and `max_parallel = 1` for lite) there yourself. Then:
 1. **Relax the clock.** In `specs/milestones.toml`, clear `start`, drop the event's milestones, and set a first
    milestone with a real ship date and a cut list. `ship.py` can archive the event's specs first.
 2. **Write `NOW.md`**: the current state, the honest gaps, and the next step.

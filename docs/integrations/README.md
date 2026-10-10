@@ -1,6 +1,6 @@
 # Integrations (optional)
 
-Core never depends on a particular agent tool. These notes show how to plug common tools into the kit: what file
+The kit never depends on a particular agent tool. These notes show how to plug common tools into the kit: what file
 they read on start, how to launch one non-interactively, and a `[watchdog].restart` template. CLIs change fast,
 so check your tool's `--help` and docs for the exact flags in your version.
 

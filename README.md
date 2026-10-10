@@ -15,7 +15,7 @@ through the pass (a pull request), and nothing leaves without tasting (CI).
 
 I showed up to ShellHacks 2026 without a team, met three strangers on Discord, and we won first place. Our coding
 agents merged 349 pull requests in 32 hours, working from a shared spec. The win was real, and so were the cracks:
-the agents needed me every 30 minutes, I slept about an hour, and our demo crashed in front of a judge. This kit is
+the agents needed me every 10–30 minutes, I slept about an hour, and our demo crashed in front of a judge. This kit is
 everything that worked, plus fixes for everything that broke, packaged so you can start in minutes, whether you're
 racing a hackathon deadline or trying to finally finish a side project.
 
@@ -37,7 +37,7 @@ cd ~/code/my-project
 npx agent-brigade --profile hackathon --full     # or: --profile project --lite
 ```
 Works on a new or an existing repo. Needs Python 3.11+, git and Node (or clone this repo and run
-`python3 install.py` instead); `gh` turns on issues. The project gets about 25 neutral files (`AGENTS.md`,
+`python3 install.py` instead); `gh` is how agents open, claim and merge PRs and file issues. The project gets about 25 neutral files (`AGENTS.md`,
 `.agents/`, `specs/`, CI and GitHub templates) and nothing that names this kit. Then:
 1. Fill in `specs/mission.md`, `tech-stack.md`, `roadmap.md`, and one spec per feature (copy
    `specs/features/_template/`). Hackathon: run the [plan bake-off](docs/hackathon/plan-bakeoff.md) first.
@@ -62,8 +62,8 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
   `specs/milestones.toml` says what ships when, in priority order, for both profiles; each milestone is also a
   GitHub milestone, and `ship.py` turns a finished one into a one-page walkthrough.
 - **The loop** (in the installed [AGENTS.md](template/parts/agents-common.md)): pick the first ready feature, build
-  in a worktree (full size claims it with a draft PR first), pass CI, write a done note, merge. **Must** rules are enforced by checks (ownership, a green `main`, the
-  freeze, no conflict markers or secrets). **Prefer** rules are engineering judgment (PR size, splitting along seams).
+  in a worktree (full size claims it with a draft PR first), pass CI, write a done note, merge. **Must** rules are enforced by checks (ownership, a green PR, the
+  freeze, no conflict markers or debug leftovers). **Prefer** rules are engineering judgment (PR size, splitting along seams).
 
 ## What's in this repo
 
@@ -76,6 +76,9 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 | `docs/` | Guides for people, never installed: [quickstart](docs/quickstart.md), [config reference](docs/config.md), [glossary](docs/glossary.md), [roles](docs/roles.md), [planner](docs/planner.md), [briefing](docs/briefing.md), [budget](docs/budget.md), [remote mode](docs/remote.md), [upgrading](docs/upgrading.md), [integrations](docs/integrations/) |
 | `docs/hackathon/` | [Overnight run](docs/hackathon/overnight.md), [preflight](docs/hackathon/preflight.md), [plan bake-off](docs/hackathon/plan-bakeoff.md), [judge agent](docs/hackathon/judge-agent.md), [demo snapshot](docs/hackathon/demo-snapshot.md), [pitch](docs/hackathon/pitch.md) |
 | `docs/project/` | [One-way doors](docs/project/one-way-doors.md), [weekly routine](docs/project/weekly.md), [budget](docs/project/budget.md) |
+| `tests/` | Unit tests for `install.py` and every script |
+| `dev/`, `.agents/config.toml` | The kit's own mission, decisions and milestone, linted by its CI |
+| `CHANGELOG.md`, `LICENSE` | Release notes; MIT |
 | `examples/` | [mini-hackathon](examples/mini-hackathon/) and [mini-project](examples/mini-project/): toy projects whose tests replay the loop against the real checks |
 
 ## What each failure turned into
@@ -84,7 +87,7 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 |---|---|
 | Agents ran out of work every 10–30 min | The planner drafts the next batch into a `plan:` PR, and blocked agents file an issue and switch tasks |
 | Sessions died; laptops ran out of RAM and disk | `watchdog.py` (heartbeats, restarts, resource alerts) + remote mode |
-| A human merged conflict markers into `main` | `check_markers.py` in the pre-commit hook **and** CI, plus `enforce_admins` |
+| A human merged conflict markers into `main` | `check_markers.py` in the pre-commit hook **and** CI, plus `enforce_admins` ([preflight](docs/hackathon/preflight.md); the installer's one-line protection command leaves it off) |
 | An untested 1,191-line feature merged 4 min before the deadline | `check_gates.py`: the final milestone's freeze, enforced in CI |
 | The live demo throttled on a free-tier database | Production load test in preflight, `demo_snapshot.py`, `verify_release.py` |
 | The team couldn't explain the code to judges | A briefing and judge agent scheduled hours before judging |

@@ -11,7 +11,7 @@ the weekend around them.
 | Launch | Bootstrap feature first. Everything else waits for its done note. | One agent |
 | The long middle | The loop. The planner keeps the backlog at 2×. Demo early to mentors/sponsors, and write their feedback into `specs/context/`. | Agents; humans at checkpoints |
 | Freeze − 3 h | Judge review (`judge-agent.md`) and briefing (`docs/briefing.md`). Fix only what they find. | Judge, briefer |
-| Freeze | No new features. Fixes and reverts only. | CI |
+| Freeze | Only the final milestone's own features and `allow`, plus fixes, reverts and docs; no `plan:`. From `report_before`: fixes, reverts, docs and `allow`. | CI |
 | Freeze → submit | `verify_release.py` against prod, `demo_snapshot.py`, rehearse the pitch (`pitch.md`), submit early. | Demo + deploy owners |
 
 ## Milestones (enforced by `check_gates.py` in CI)
@@ -21,7 +21,7 @@ event isn't a 36-hour one. The template's defaults assume 36 hours:
 - `safe-demo` (+12:00) and `core` (+24:00): list features in priority order; agents take them top to bottom. Put
   late ideas in a later milestone, or on a cut list, so they don't start late.
 - `submission` (+35:30), the final milestone: `freeze` from +30:00 (no new features), `report_before` from +34:00
-  (the reporter writes `reports/final.md` and commits `STOP`), and at ship nothing merges.
+  (the reporter writes `reports/final.md` and adds `STOP` in a `fix:` PR), and at ship nothing merges.
 
 The freeze is a CI failure, not a reminder. At ShellHacks, an untested 1,191-line feature merged four minutes
 before the deadline and had to be reverted with a minute to spare. With a freeze, that PR can't merge.
@@ -45,7 +45,7 @@ babysitting.
 | `main` red | The watchdog opens a `main-red` issue. The owner gets 20 minutes, then anyone may `git revert` it (`revert: ...`). |
 | Spec silent | Take the default, log a decision, move on. |
 | A rule turns out too strict to finish | Change it in the open with a decision record (for example, add labelled confidence tiers), never quietly. |
-| Agent stuck or dead | The watchdog restarts it; the spec on `main` carries the context. |
+| Agent stuck or dead | The watchdog alerts, and restarts it if `[watchdog].restart` is set; the spec on `main` carries the context. |
 | Need everyone to stop | Commit `STOP` to `main` (phone works: GitHub web → Add file). |
 
 ## The demo is part of the build

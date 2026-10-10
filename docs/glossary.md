@@ -25,12 +25,11 @@ Every term the kit uses, in one line each.
 | Planner | The agent role that drafts new feature specs into a `plan:` PR, keeping the backlog full. |
 | Reporter | The agent role that writes the Status issue on a schedule. |
 | Milestone | A named deadline in `specs/milestones.toml` with its features in priority order, enforced in CI. A hackathon's milestones are offsets from its start. |
-| Backlog | A spec in no milestone: listed in status, never picked until a milestone lists it. |
+| Backlog | A spec in no milestone: listed in status, never picked until a milestone lists it. ("Backlog low" in status means fewer than 2× `max_parallel` features are ready or claimed.) |
 | Walkthrough | `specs/shipped/<milestone>/README.md`, stitched from the done notes by `ship.py`: one page per release. |
-| Freeze | The window before a milestone ships when only its own features merge. In the final milestone: no new feature work, only fixes and reverts. |
+| Freeze | The window before a milestone ships when only its own features merge. In the final milestone the freeze also blocks `plan:`; from `report_before` only fixes, reverts, docs and `allow` merge; at ship nothing does. |
 | Golden test | A test built from a known worked example (often the sponsor's), so the core math can never silently drift. |
 | `main` red | The latest CI run on `main` failed. Nobody merges except the fix. |
-| Heartbeat | A file each agent touches every loop, inside the repo's git folder so every worktree shares it. If it goes quiet, the watchdog restarts that session. |
+| Heartbeat | A file each agent touches every loop, inside the repo's git folder so every worktree shares it. If it goes quiet, the watchdog alerts, and restarts that session if `[watchdog].restart` is set. |
 | Lite / full | The size dial: one agent with minimal ceremony, or parallel agents with claims. |
-| Lane | A group of related features (data, app, quality) owned by the same agents. Full size only. |
 | Briefing | `docs/briefing.md`: one page on the problem, architecture, honest numbers and what changed. |
