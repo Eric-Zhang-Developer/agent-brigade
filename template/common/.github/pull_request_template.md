@@ -7,6 +7,7 @@ Closes #<!-- the feature's issue -->
 
 ## Checks
 - Spec validation: <!-- paste output or link -->
+- Verify: <!-- the line verify.py printed (fix PRs: the failing line on origin/main, then the passing one), or `not verified` and why -->
 - CI on this exact revision: <!-- link -->
 - Done note `changes/<slug>.md` written last (feat PRs only)
 

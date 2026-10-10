@@ -9,7 +9,7 @@ Reads specs/milestones.toml (format: the comments in that file). Same rules for 
                     fixes still merge; anything on its cut list is rejected
   final milestone   from `report_before`: only fixes, reverts, docs and `allow`; at `ship`: nothing merges
 A PR over [pr].warn_lines changed lines gets a warning, never a failure. So does a feat PR whose done note has no
-command under `## How to check it` (verify.py prints the line to paste there).
+verify.py line (or `not verified`) under `## How to check it`.
 """
 
 import os
@@ -79,15 +79,16 @@ def changed_lines(root, base: str, exclude: list[str]) -> int:
 
 
 def unchecked_note(root, cfg, t: dict) -> str | None:
-    """Warning for a feat PR whose done note has neither a `command` nor `not verified` under `## How to check it`."""
+    """Warning for a feat PR whose done note has neither the verify.py line nor `not verified` under `## How to check it`."""
     note = root / cfg["paths"]["changes"] / f"{t['scope']}.md"
     if t["kind"] != "feature" or not note.is_file():
         return None
     body = note_section(note.read_text(), "How to check it")
-    if body and ("`" in body or "not verified" in body.lower()):
+    if body and any(line.lstrip("-* ").startswith("verify: ") or "not verified" in line.lower() for line in body.splitlines()):
         return None
-    return (f"{note.relative_to(root)} has no command under `## How to check it`: paste the line verify.py prints, "
-            "or write `not verified` and why")
+    return (f"{note.relative_to(root)} has no verify.py line under `## How to check it`: run "
+            f"`python3 .agents/scripts/verify.py --slug {t['scope']} --worktree .` and paste its last line, or write "
+            "`not verified` and what's missing (a unit-test command alone doesn't count)")
 
 
 def main(argv=None) -> int:

@@ -74,8 +74,8 @@ class Hackathon(Base):
 
     def test_done_note_without_a_check_warns_but_passes(self):
         note = "## What shipped\nA.\n\n## How to check it\n{}\n\n## Gaps\nNone.\n"
-        for body, warns in (("Looked at it.", True), ("", True), ("verify: `make smoke` pass", False),
-                            ("not verified: no verifier yet", False)):
+        for body, warns in (("Looked at it.", True), ("", True), ("`python3 -m unittest tests.test_x`", True),
+                            ("verify: `make smoke` pass at abc1234", False), ("not verified: no verifier yet", False)):
             with self.subTest(body=body):
                 rc, out = self.gate("feat(alpha): a", at("5:00"), {"src/x.py": "x\n", "changes/alpha.md": note.format(body)})
                 self.assertEqual(rc, 0, out)

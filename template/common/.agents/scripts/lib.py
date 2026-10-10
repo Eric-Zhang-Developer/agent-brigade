@@ -47,7 +47,7 @@ DEFAULTS = {
         "secret_patterns": ["sk-", "sk_live_", "AIza", "ghp_", "github_pat_", "xox", "mongodb+srv://", "postgres://", "-----BEGIN"],
     },
     "budget": {"monthly_usd": 0, "reserve_final_hours": 3},
-    "verify": {"command": ""},
+    "verify": {"command": "", "timeout": 300},
 }
 
 

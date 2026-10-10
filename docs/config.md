@@ -44,7 +44,8 @@ warn_lines = 400               # CI warns (never fails) above this; 0 = off
 exclude = []                   # prefixes not counted
 
 [verify]
-command = ""                   # how an agent sees its change running; shell template: {slug} {worktree}; empty = not set up
+command = ""                   # how an agent sees its change running; shell template: {slug} {worktree} {out}; empty = not set up
+timeout = 300                  # seconds; then it fails and everything it started is stopped
 
 [markers]
 debug_patterns = ['^\s*debugger;?\s*$', '^\s*breakpoint\(\)', '^\s*import pdb', 'console\.log\(']

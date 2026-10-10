@@ -1,6 +1,7 @@
 import io
 import unittest
 from contextlib import redirect_stdout
+from pathlib import Path
 
 import helpers
 from lib import note_section
@@ -8,8 +9,10 @@ from verify import main
 
 
 class Verify(helpers.RepoCase):
-    def run_verify(self, command, *args):
+    def run_verify(self, command, *args, commit=False):
         helpers.write(self.root, {".agents/config.toml": f"[verify]\ncommand = '{command}'\n"})
+        if commit:
+            self.commit("config")
         out = io.StringIO()
         with redirect_stdout(out):
             rc = main(["--root", str(self.root), *args])
@@ -21,11 +24,45 @@ class Verify(helpers.RepoCase):
         self.assertIn("not set up", out)
         self.assertIn("not verified", out)
 
-    def test_pass_and_fail_give_one_pasteable_line(self):
-        rc, out = self.run_verify("exit 0", "--slug", "map-data")
-        self.assertEqual((rc, out.strip().splitlines()[-1]), (0, "verify: `exit 0` pass"))
-        rc, out = self.run_verify("exit 3", "--slug", "map-data")
-        self.assertEqual((rc, out.strip().splitlines()[-1]), (1, "verify: `exit 3` FAIL (exit 3)"))
+    def last(self, out):
+        return out.strip().splitlines()[-1]
+
+    def test_pass_and_fail_give_one_pasteable_line_with_the_commit(self):
+        sha = helpers.sh(self.root, "git", "rev-parse", "--short", "HEAD").strip()
+        rc, out = self.run_verify("exit 0", "--slug", "map-data")   # config just changed: uncommitted
+        self.assertEqual((rc, self.last(out)), (0, f"verify: `exit 0` pass at {sha} (uncommitted changes)"))
+        rc, out = self.run_verify("exit 3", "--slug", "map-data", commit=True)
+        sha = helpers.sh(self.root, "git", "rev-parse", "--short", "HEAD").strip()
+        self.assertEqual((rc, self.last(out)), (1, f"verify: `exit 3` FAIL (exit 3) at {sha}"))
+
+    def test_timeout_fails_and_stops_what_it_started(self):
+        marker = self.root / "survived"
+        helpers.write(self.root, {".agents/config.toml": f"[verify]\ncommand = '(sleep 2; touch {marker}) & sleep 30'\ntimeout = 0.5\n"})
+        out = io.StringIO()
+        with redirect_stdout(out):
+            rc = main(["--root", str(self.root), "--slug", "a"])
+        self.assertEqual(rc, 1)
+        self.assertIn("timed out after 0.5s", self.last(out.getvalue()))
+        import time
+        time.sleep(2.5)
+        self.assertFalse(marker.exists(), "a background child outlived the verifier")
+
+    def test_background_server_is_stopped_after_a_pass(self):
+        marker = self.root / "leaked"
+        rc, _ = self.run_verify(f"(sleep 1; touch {marker}) & true", "--slug", "a")
+        self.assertEqual(rc, 0)
+        import time
+        time.sleep(1.5)
+        self.assertFalse(marker.exists())
+
+    def test_out_is_a_fresh_kept_evidence_folder(self):
+        rc, out = self.run_verify("echo shot > {out}/screen.txt", "--slug", "map-data")
+        self.assertEqual(rc, 0)
+        line = self.last(out)
+        kept = Path(line.split("(evidence: ")[1].rstrip(")"))
+        self.assertEqual((kept / "screen.txt").read_text(), "shot\n")
+        self.assertIn("agent-evidence/map-data", str(kept))
+        self.assertNotIn("evidence", helpers.sh(self.root, "git", "status", "--porcelain"))
 
     def test_placeholders_are_filled_and_the_path_is_quoted(self):
         wt = self.root / "a worktree"
