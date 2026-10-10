@@ -68,6 +68,8 @@ def verdict(root, pr: dict) -> tuple[int, str]:
     for code, kind in ((7, "fail"), (8, "pending")):
         if hit := [c.get("name") or c.get("context") or "?" for c in checks if check_state(c) == kind]:
             return code, f"{'failing' if kind == 'fail' else 'pending'} checks: {', '.join(hit)}"
+    if pr.get("mergeable") == "UNKNOWN":  # GitHub recomputes this for a few seconds after the base branch moves
+        return 8, "GitHub is still checking for conflicts (mergeable: UNKNOWN): run again in a few seconds"
     return 0, "ready"
 
 

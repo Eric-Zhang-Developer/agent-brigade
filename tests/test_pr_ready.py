@@ -68,6 +68,7 @@ class PrReady(unittest.TestCase):
         self.assertVerdict({"statusCheckRollup": [{"name": "e2e", "status": "IN_PROGRESS", "conclusion": ""}]},
                            8, "pending checks: e2e")
         self.assertVerdict({"statusCheckRollup": [{"context": "deploy", "state": "EXPECTED"}]}, 8, "pending")
+        self.assertVerdict({"mergeable": "UNKNOWN"}, 8, "still checking for conflicts")   # not "ready" after main moved
 
     def test_skipped_and_neutral_checks_pass(self):
         rollup = [{"name": n, "status": "COMPLETED", "conclusion": c} for n, c in (("a", "SKIPPED"), ("b", "NEUTRAL"))]
