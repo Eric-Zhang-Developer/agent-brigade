@@ -119,7 +119,7 @@ def minutes_since(iso: str, now: datetime) -> float:
 class Watchdog:
     def __init__(self, root: Path, cfg: dict, dry: bool):
         self.root, self.cfg, self.dry = root, cfg["watchdog"], dry
-        self.claims = cfg["size"] == "full"
+        self.claims, self.said_no_gh = cfg["size"] == "full", False
         self.hb_dir = heartbeat_dir(root)
         self.state_path = self.hb_dir.parent / "watchdog-state.json"
         try:
@@ -213,6 +213,9 @@ class Watchdog:
     def check_main(self, now: datetime):
         runs = gh_json(self.root, "run", "list", "--branch", "main", "--limit", "20",
                        "--json", "conclusion,status,createdAt")
+        if runs is None and not self.said_no_gh:  # once per process, not every pass
+            print("watchdog: gh unavailable or not authenticated: skipping the claims and main CI checks")
+            self.said_no_gh = True
         if not runs:
             return
         red = []

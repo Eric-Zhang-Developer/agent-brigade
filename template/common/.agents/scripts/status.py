@@ -273,12 +273,12 @@ def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--out", help="output file, or '-' for stdout")
     ap.add_argument("--issue", action="store_true", help="rewrite the pinned issue labelled `status`")
-    ap.add_argument("--now", help="ISO time with offset (default: now)")
+    ap.add_argument("--now", type=datetime.fromisoformat, help="ISO time with offset (default: now)")
     ap.add_argument("--offline", action="store_true", help="don't call gh")
     args = ap.parse_args(argv)
     root = root_from(args)
     cfg = load_config(root)
-    now = datetime.fromisoformat(args.now) if args.now else datetime.now(timezone.utc)
+    now = args.now or datetime.now(timezone.utc)
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
     if not (args.out or args.issue):
