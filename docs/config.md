@@ -9,7 +9,8 @@ AGENTS.md                     rules + the loop (from template/parts/), never ove
 CLAUDE.md                     @AGENTS.md
 .agents/config.toml           settings (below)
 .agents/scripts/*.py          refreshed on every re-install
-.agents/hooks/pre-commit      enabled with git config core.hooksPath .agents/hooks
+.agents/hooks/pre-commit      enabled with git config core.hooksPath .agents/hooks, unless the repo already has
+                              hooks (its own .git/hooks or husky): then call it from your pre-commit hook
 specs/                        mission, tech-stack, roadmap, features/_template, decisions/
 specs/milestones.toml         what ships when (both profiles)
 NOW.md, specs/review-paths.toml   project only
