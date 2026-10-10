@@ -107,6 +107,27 @@ def allowed(title: str, cfg: dict, specs: dict, shipped: dict, done: set, revert
     return (lambda p: under(p, prefixes)), f"{prefixes}"
 
 
+def hint(path: str, cfg: dict, specs: dict, shipped: dict, done: set) -> str:
+    """Which titles would allow `path`, with why it's closed: 'frozen: needs contract:'."""
+    sp, changes = cfg["paths"]["specs"].rstrip("/"), cfg["paths"]["changes"].rstrip("/")
+    frozen = as_list(cfg["ownership"]["frozen"])
+    owner = next((s for s, fm in in_flight(specs, done).items()
+                  if any(path.startswith(e) for e in as_list(fm.get("owns")))), None)
+    why = ("frozen" if any(path.startswith(f) for f in frozen) else "spec" if path.startswith(f"{sp}/")
+           else "done note" if path.startswith(f"{changes}/") else f"owned by {owner}" if owner else "")
+    titles = []
+    for title in ("fix: x", "docs: x", "contract: x", "plan: x"):
+        if allowed(title, cfg, specs, shipped, done)[0](path):
+            titles.append(title[:-2])
+    for s, fm in {**shipped, **specs}.items():
+        if fm.get("bootstrap") is not True:  # bootstrap may change anything: never the advice
+            title = f"feat({s})" if s in specs and s not in done else f"fix({s})"
+            if allowed(f"{title}: x", cfg, specs, shipped, done)[0](path):
+                titles.append(title)
+    need = f"needs {' or '.join(titles)}" if titles else "no title allows it"
+    return f"{why}: {need}" if why else need
+
+
 def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--lint-specs", action="store_true", help="check spec front matter and milestones.toml")
@@ -134,14 +155,15 @@ def main(argv=None) -> int:
         t = parse_title(args.title)
         revert_files = reverted_files(root, args.base) if t and t["kind"] == "revert" else None
         try:
-            ok, desc = allowed(args.title, cfg, specs, shipped, done_at(root, cfg, args.base), revert_files)
+            done = done_at(root, cfg, args.base)
+            ok, desc = allowed(args.title, cfg, specs, shipped, done, revert_files)
         except ValueError as e:
             print(f"ownership: {e}")
             return 1
         files = changed_files(root, args.base)
         bad = [f for f in files if not ok(f)]
         for f in bad:
-            print(f"ownership: {f} is outside what {args.title!r} may change")
+            print(f"ownership: {f} is outside what {args.title!r} may change ({hint(f, cfg, specs, shipped, done)})")
         print(f"ownership: {len(files)} changed files, allowed {desc}: {'FAIL' if bad else 'ok'}")
         rc |= bool(bad)
     return rc

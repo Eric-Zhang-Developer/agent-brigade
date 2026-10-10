@@ -20,6 +20,9 @@ with any agent tool and a standard-library script.
    With no verifier, the note says `not verified` and what's missing.
 5. **CI warns, and never fails,** when a `feat(<slug>)` done note has neither that line nor `not verified`. A
    unit-test command alone doesn't count: tests belong in Checks.
+6. **Never relax the predicate** (pstack's rule): an agent doesn't weaken its spec's Validation, a golden test or
+   `[verify].command` to get a pass. CI warns, and never fails, when a `feat(<slug>)` or `fix(<slug>)` PR changes
+   its own spec's `## Validation`; the PR has to say why.
 
 An empty `command` is reported as "not set up". It is never hidden and never counted as passing. That keeps the rule
 in `AGENTS.md` honest: *merged*, *checked by CI*, *verified live* and *tried by a user* are four different things.

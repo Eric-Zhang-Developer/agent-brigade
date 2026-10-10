@@ -9,14 +9,15 @@ Reads specs/milestones.toml (format: the comments in that file). Same rules for 
                     fixes still merge; anything on its cut list is rejected
   final milestone   from `report_before`: only fixes, reverts, docs and `allow`; at `ship`: nothing merges
 A PR over [pr].warn_lines changed lines gets a warning, never a failure. So does a feat PR whose done note has no
-verify.py line (or `not verified`) under `## How to check it`.
+verify.py line (or `not verified`) under `## How to check it`, and a feat or fix PR that changes its own spec's
+`## Validation`.
 """
 
 import os
 import sys
 from datetime import datetime, timedelta, timezone
 
-from lib import (TITLE_HELP, as_list, done_at, git_lines, load_config, load_milestones, load_shipped, load_specs,
+from lib import (TITLE_HELP, as_list, done_at, git, git_lines, load_config, load_milestones, load_shipped, load_specs,
                  note_section, parse_title, parser, root_from)
 
 
@@ -91,6 +92,20 @@ def unchecked_note(root, cfg, t: dict) -> str | None:
             "`not verified` and what's missing (a unit-test command alone doesn't count)")
 
 
+def validation_changed(root, base: str, t: dict, specs: dict, shipped: dict) -> str | None:
+    """Warning for a feat/fix(<slug>) PR whose own spec's `## Validation` differs from the merge base."""
+    fm = (specs.get(t["scope"]) or shipped.get(t["scope"])) if t["kind"] in ("feature", "fix") else None
+    if not fm:
+        return None
+    path = fm["_path"]
+    before = note_section(git(root, "show", f"{git(root, 'merge-base', base, 'HEAD').strip()}:{path}", check=False),
+                          "Validation")
+    if before is None or before == note_section((root / path).read_text(), "Validation"):
+        return None
+    return (f"{path}: this PR changes its own `## Validation`. That's allowed, but say why in the PR description "
+            "(best in a PR of its own); never weaken it to get a pass")
+
+
 def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--title", required=True, help="PR title")
@@ -111,7 +126,8 @@ def main(argv=None) -> int:
     except ValueError as e:
         print(f"gates: milestones.toml: {e}")
         return 1
-    reason = rule(t, ms, load_specs(root, cfg), load_shipped(root, cfg), done_at(root, cfg, args.base), now)
+    specs, shipped = load_specs(root, cfg), load_shipped(root, cfg)
+    reason = rule(t, ms, specs, shipped, done_at(root, cfg, args.base), now)
     line = summary(ms, now)
 
     warn, big = int(cfg["pr"]["warn_lines"]), None
@@ -123,7 +139,7 @@ def main(argv=None) -> int:
                    "or say in the description why it's one piece")
 
     print(f"gates: {line}")
-    for w in (big, unchecked_note(root, cfg, t)):
+    for w in (big, unchecked_note(root, cfg, t), validation_changed(root, args.base, t, specs, shipped)):
         if w:
             print(f"::warning::{w}" if os.environ.get("GITHUB_ACTIONS") else f"gates: warning: {w}")
     if reason:

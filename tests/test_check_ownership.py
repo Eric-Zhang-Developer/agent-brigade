@@ -114,6 +114,21 @@ class Titles(helpers.RepoCase):
     def test_contract_outside_fails(self):
         self.assertEqual(self.check("contract: add", {"src/a/x.py": "x"})[0], 1)
 
+    def test_errors_name_the_title_that_would_allow_the_file(self):
+        cases = (("feat(alpha): a", "core/x.py", "(frozen: needs contract:)"),
+                 ("feat(alpha): a", "src/b/x.py", "(needs fix: or fix(beta))"),  # beta is done
+                 ("chore: tidy", "src/a/x.py", "(owned by alpha: needs feat(alpha))"),
+                 ("docs: x", "src/old/z.py", "(needs fix: or fix(old))"),
+                 ("fix: x", "specs/features/alpha/spec.md", "(spec: needs contract: or plan: or feat(alpha))"),
+                 ("fix: x", "changes/alpha.md", "(done note: needs feat(alpha))"))
+        for title, path, hint in cases:
+            with self.subTest(path=path):
+                helpers.sh(self.root, "git", "checkout", "-q", "-B", "work", "main")
+                self.commit("work", {path: "x"})
+                rc, out = run(self.root, "--title", title, "--base", "main")
+                self.assertEqual(rc, 1, out)
+                self.assertIn(f"{path} is outside what {title!r} may change {hint}", out)
+
     def test_plan_may_add_specs_and_ship(self):
         rc, out = self.check("plan: batch", {"specs/features/new-one/spec.md": "s", "specs/roadmap.md": "r",
                                              "specs/milestones.toml": "", "specs/shipped/v0.2/README.md": "w",
