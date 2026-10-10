@@ -1,6 +1,6 @@
 {
   "name": "agent-brigade",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "Install a spec-driven workflow for AI coding agents into any repo: rules, CI checks, GitHub issues, milestones.",
   "license": "MIT",
   "bin": {

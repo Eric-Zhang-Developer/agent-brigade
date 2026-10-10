@@ -37,7 +37,7 @@ cd ~/code/my-project
 npx agent-brigade --profile hackathon --full     # or: --profile project --lite
 ```
 Works on a new or an existing repo. Needs Python 3.11+, git and Node (or clone this repo and run
-`python3 install.py` instead); `gh` is how agents open, claim and merge PRs and file issues. The project gets about 25 neutral files (`AGENTS.md`,
+`python3 install.py` instead); `gh` is how agents open, claim and merge PRs and file issues. The project gets about 30 neutral files (`AGENTS.md`,
 `.agents/`, `specs/`, CI and GitHub templates) and nothing that names this kit. Then:
 1. Fill in `specs/mission.md`, `tech-stack.md`, `roadmap.md`, and one spec per feature (copy
    `specs/features/_template/`). Hackathon: run the [plan bake-off](docs/hackathon/plan-bakeoff.md) first.
