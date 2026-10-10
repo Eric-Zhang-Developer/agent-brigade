@@ -47,7 +47,7 @@ __CLAIM__
 | `fix: ...` with no scope (same types) | anything not frozen, not in `specs/` or `changes/`, and not owned by a feature in flight |
 | `docs: ...` | open paths (like `NOW.md`), and Markdown outside `specs/`, `changes/`, frozen paths and features in flight |
 | `contract: ...` | frozen paths and `specs/`: additive changes only |
-| `plan: ...` | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md`; a person merges it |
+| `plan: ...` | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md`, `specs/context/findings.md`; a person merges it |
 | `revert: ...` | exactly what the reverted commit changed; make it with `git revert` |
 
 The bootstrap feature (`bootstrap: true`) may change anything.

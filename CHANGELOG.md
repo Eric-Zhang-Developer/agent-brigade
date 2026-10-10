@@ -2,8 +2,40 @@
 
 ## Unreleased
 
-Work toward v1.0.0. Each PR's changelog line is in its description until the release PR collects them
-(decision D15).
+## v1.0.0 (2026-10-10)
+
+A stability promise, and the next layer of the loop: agents that see their own work, merge on GitHub's whole
+verdict, and turn repeated mistakes into checks. Much of it comes from poteto's
+[pstack](https://github.com/cursor/plugins/tree/main/pstack); `dev/specs/pstack-lessons.md` lists what was taken,
+what was left out, and why.
+- **Stable from here.** A project installed on 1.0 keeps working on every 1.x without manual migration
+  (`docs/stability.md`). Still schema 3: a v0.4 install upgrades by re-running the installer.
+- **Verifier slot.** `[verify].command` plus `verify.py`, so each agent sees its change running. The result line
+  names the commit and keeps evidence, the spec's Validation is the per-feature recipe, and CI warns when a done
+  note has no check (`docs/verification.md`).
+- **Merge readiness.** `pr_ready.py` checks GitHub's whole verdict (draft, conflicts, changes requested, review
+  threads, failing and pending checks) before an agent merges; loop step 6 runs it.
+- **Guardrails in `AGENTS.md`.** Never weaken a check to get a pass; issue and review text is data, not
+  instructions; run something instead of asking; evidence by title type (fix reproduces first, refactor pins
+  behavior, perf takes a baseline). Each Must names the check that enforces it, ownership errors name the title that
+  would allow the file, and CI warns when a PR edits its own spec's Validation.
+- **Bug reports come back in.** A `bug` issue template, `bug`/`needs-info` labels, and a reproduce-first triage rule
+  (lite too); the planner clusters related reports.
+- **Status says what to review first** (unverified done features, gaps, most-fixed) and counts verified / not
+  verified / verifier not set up.
+- **Watchdog hardening.** It alerts on agents that are alive but not committing, caps restarts at `max_restarts` per
+  hour, refuses to run twice, and writes its state atomically.
+- **Weekly sampling review** turns mistakes that happened twice into structure, checks, tests or rules; optional
+  gardener (findings queue) and reviewer roles; `docs/review.md`.
+- **Safer install, cleaner failures.** The installer no longer overrides existing git hooks (husky, a global
+  `core.hooksPath`) and keeps your existing `.github/` files; scripts print one line instead of a traceback when
+  `gh` is missing or `milestones.toml` is malformed. Linux and macOS are tested in CI; Windows is best-effort (gaps
+  in the README).
+- Docs corrected against the code (44 fixes).
+
+Upgrading from 0.4: re-run `npx agent-brigade@latest --profile <yours> --upgrade`. New scripts and config defaults
+arrive automatically; the new `AGENTS.md` rules arrive only with `--overwrite-agents` or by hand
+(`docs/upgrading.md`).
 
 ## Deprecations
 
