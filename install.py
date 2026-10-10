@@ -86,6 +86,17 @@ def enable_hook(target: Path) -> str:
     hook.chmod(hook.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     if not (target / ".git").exists():
         return "not a git repo yet: after `git init`, run `git config core.hooksPath .agents/hooks`"
+    # Setting core.hooksPath silently turns off hooks the project already has (its own .git/hooks, husky), so don't.
+    current = subprocess.run(["git", "config", "core.hooksPath"], cwd=target, capture_output=True, text=True).stdout.strip()
+    if current == ".agents/hooks":
+        return "pre-commit hook on"
+    git_path = subprocess.run(["git", "rev-parse", "--git-path", "hooks"], cwd=target, capture_output=True,
+                              text=True).stdout.strip()  # absolute in a linked worktree
+    hooks = target / git_path
+    own = sorted(p.name for p in hooks.iterdir() if not p.name.endswith(".sample")) if hooks.is_dir() else []
+    if current or own:
+        why = f"core.hooksPath is {current}" if current else f"{git_path} has {', '.join(own)}"
+        return f"kept your git hooks ({why}): to add the checks, run `sh .agents/hooks/pre-commit` from your pre-commit hook"
     r = subprocess.run(["git", "config", "core.hooksPath", ".agents/hooks"], cwd=target, capture_output=True, text=True)
     return "pre-commit hook on" if r.returncode == 0 else f"hook not enabled: {r.stderr.strip()}"
 
@@ -115,6 +126,8 @@ def install(target: Path, profile: str, size: str | None, overwrite_agents: bool
     for src, rel in template_files(profile):
         dest = target / rel
         if dest.exists() and (not rel.startswith(KIT_OWNED) or dest.read_bytes() == src.read_bytes()):
+            if rel.startswith(".github/") and dest.read_bytes() != src.read_bytes():
+                log.append(f"kept your {rel}")
             continue
         log.append(f"{'refreshed' if dest.exists() else 'created'} {rel}")
         dest.parent.mkdir(parents=True, exist_ok=True)
@@ -168,7 +181,8 @@ def install(target: Path, profile: str, size: str | None, overwrite_agents: bool
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("target", nargs="?", default=".", help="project folder (default: current directory)")
-    ap.add_argument("--profile", required=True, choices=["hackathon", "project"])
+    ap.add_argument("--profile", required=True, choices=["hackathon", "project"],
+                    help="hackathon: a deadline and a demo; project: ongoing work with NOW.md")
     size = ap.add_mutually_exclusive_group()
     size.add_argument("--lite", dest="size", action="store_const", const="lite", help="one agent, least ceremony")
     size.add_argument("--full", dest="size", action="store_const", const="full", help="parallel agents (default)")

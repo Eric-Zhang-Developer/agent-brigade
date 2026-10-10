@@ -50,6 +50,11 @@ Works on a new or an existing repo. Needs Python 3.11+, git and Node (or clone t
 
 Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
 
+**Platforms:** Linux and macOS are tested in CI. Windows is best-effort: CI installs and runs the tests there too,
+but `[verify].command` and the watchdog's `restart`/`alert` commands run in `cmd.exe` with POSIX-quoted
+placeholders, a verifier's background processes aren't stopped, the watchdog can't read free RAM, and a stale
+watchdog lock file has to be deleted by hand.
+
 ## How it works
 
 - **Specs are the source of truth.** `specs/` holds the mission, the stack, the roadmap and one spec per feature,

@@ -55,3 +55,40 @@ jobs:
           npx --yes --package "$(ls "$RUNNER_TEMP"/agent-brigade-*.tgz)" agent-brigade --profile project --lite
           python3 .agents/scripts/check_ownership.py --lint-specs
           python3 .agents/scripts/status.py --offline --out - > /dev/null
+
+  # Not a required check (branch protection requires `ci` only): macOS and Windows support is best-effort and
+  # this job shows where it stands. See "Platforms" in the README for what is known not to work on Windows.
+  platforms:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+
+      - name: Unit tests
+        run: |
+          git config --global user.email ci@example.com
+          git config --global user.name ci
+          python -m unittest discover -s tests -t tests -v
+
+      - name: npm package installs a working project
+        run: |
+          npm pack --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/proj" && cd "$RUNNER_TEMP/proj" && git init -q
+          npx --yes --package "$(ls "$RUNNER_TEMP"/agent-brigade-*.tgz)" agent-brigade --profile project --lite
+          python .agents/scripts/check_ownership.py --lint-specs
+          python .agents/scripts/status.py --offline --out - > /dev/null

@@ -110,7 +110,7 @@ def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--title", required=True, help="PR title")
     ap.add_argument("--base", default="origin/main", help="base ref (default origin/main)")
-    ap.add_argument("--now", help="ISO time with offset, for testing (default: now)")
+    ap.add_argument("--now", type=datetime.fromisoformat, help="ISO time with offset, for testing (default: now)")
     args = ap.parse_args(argv)
     root = root_from(args)
     cfg = load_config(root)
@@ -118,7 +118,7 @@ def main(argv=None) -> int:
     if t is None:
         print(f"gates: title {args.title!r} isn't one of: {TITLE_HELP}")
         return 1
-    now = datetime.fromisoformat(args.now) if args.now else datetime.now(timezone.utc)
+    now = args.now or datetime.now(timezone.utc)
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
     try:

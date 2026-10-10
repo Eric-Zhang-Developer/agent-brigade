@@ -43,7 +43,12 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     root = root_from(args)
     cfg = load_config(root)
-    m = next((m for m in load_milestones(root, cfg)["milestones"] if m["name"] == args.milestone), None)
+    try:
+        ms = load_milestones(root, cfg)
+    except ValueError as e:
+        print(f"ship: milestones.toml: {e}")
+        return 1
+    m = next((m for m in ms["milestones"] if m["name"] == args.milestone), None)
     if m is None:
         print(f"ship: no milestone {args.milestone!r} in specs/milestones.toml")
         return 1
@@ -58,16 +63,17 @@ def main(argv=None) -> int:
         return 1
     page = walkthrough(root, cfg, m["name"], ready, specs, datetime.now(timezone.utc))
     for s in ready:
-        print(f"ship: {'would move' if args.dry_run else 'moved'} specs/features/{s}/ -> {dest.relative_to(root)}/{s}/")
+        print(f"ship: {'would move' if args.dry_run else 'moved'} specs/features/{s}/ -> "
+              f"{dest.relative_to(root).as_posix()}/{s}/")
         if not args.dry_run:
             dest.mkdir(parents=True, exist_ok=True)
             shutil.move(str(specs_dir(root, cfg) / "features" / s), str(dest / s))
     readme = dest / "README.md"
     if not args.dry_run:
         readme.write_text(page)
-    print(f"ship: {'would write' if args.dry_run else 'wrote'} {readme.relative_to(root)}")
+    print(f"ship: {'would write' if args.dry_run else 'wrote'} {readme.relative_to(root).as_posix()}")
     print(f"ship: next: open a `plan: ship {m['name']}` PR, then "
-          f"gh release create {m['name']} --title {m['name']} --notes-file {readme.relative_to(root)}")
+          f"gh release create {m['name']} --title {m['name']} --notes-file {readme.relative_to(root).as_posix()}")
     return 0
 
 

@@ -1,3 +1,4 @@
+import hashlib
 import subprocess
 import sys
 import tempfile
@@ -105,10 +106,53 @@ class Install(unittest.TestCase):
         self.assertIn("## Project rules", (self.root / "AGENTS.md").read_text())
         self.assertNotIn("## Lite mode", (self.root / "AGENTS.md").read_text())  # size kept from config: full
 
+    def snapshot(self):
+        files = tracked_files(self.root) + [".git/config"]
+        return (helpers.sh(self.root, "git", "status", "--porcelain"),
+                {f: hashlib.sha256((self.root / f).read_bytes()).hexdigest() for f in files})
+
     def test_second_run_changes_nothing(self):
         install(self.root, "--profile", "project")
+        before = self.snapshot()
         r = install(self.root, "--profile", "project")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertEqual([l for l in r.stdout.splitlines() if "created" in l or "refreshed" in l], [])
+        self.assertEqual(self.snapshot(), before)
+
+    def test_existing_github_files_are_kept_and_reported(self):
+        mine = {".github/workflows/ci.yml": "name: mine\n", ".github/pull_request_template.md": "My template\n"}
+        helpers.write(self.root, mine)
+        r = install(self.root, "--profile", "project")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        for rel, text in mine.items():
+            self.assertEqual((self.root / rel).read_text(), text)
+            self.assertIn(f"kept your {rel}", r.stdout)
+
+    def test_existing_hooks_path_is_not_overridden(self):  # husky sets core.hooksPath
+        helpers.sh(self.root, "git", "config", "core.hooksPath", ".husky/_")
+        r = install(self.root, "--profile", "project")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(helpers.sh(self.root, "git", "config", "core.hooksPath").strip(), ".husky/_")
+        self.assertIn("kept your git hooks (core.hooksPath is .husky/_)", r.stdout)
+        self.assertIn(".agents/hooks/pre-commit", r.stdout)
+
+    def test_existing_git_hooks_are_not_disabled(self):
+        (self.root / ".git/hooks/pre-commit").write_text("#!/bin/sh\nexit 0\n")
+        r = install(self.root, "--profile", "project")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(subprocess.run(["git", "config", "core.hooksPath"], cwd=self.root).returncode, 1)  # unset
+        self.assertIn("kept your git hooks (.git/hooks has pre-commit)", r.stdout)
+
+    def test_help_lists_every_flag_and_unknown_flags_exit_2(self):
+        r = subprocess.run([sys.executable, str(INSTALL), "--help"], capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0)
+        for flag, words in (("--profile", "hackathon: a deadline"), ("--lite", "one agent"), ("--full", "parallel"),
+                            ("--overwrite-agents", "regenerate"), ("--upgrade", "upgrade steps")):
+            self.assertRegex(r.stdout, rf"{flag}[^\n]*\n?\s+{words}|{flag} +{words}", flag)
+        r = install(self.root, "--profile", "project", "--nope")
+        self.assertEqual(r.returncode, 2)
+        self.assertIn("unrecognized arguments: --nope", r.stderr)
+        self.assertFalse((self.root / "AGENTS.md").exists())
 
     def test_codeowners_from_review_paths(self):
         install(self.root, "--profile", "project")

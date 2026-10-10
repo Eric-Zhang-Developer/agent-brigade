@@ -96,11 +96,15 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     root = root_from(args)
     cfg = load_config(root)
+    try:
+        ms = load_milestones(root, cfg)
+    except ValueError as e:
+        print(f"sync_issues: milestones.toml: {e}")
+        return 1
     repo = gh_json(root, "repo", "view", "--json", "url,defaultBranchRef")
     if repo is None:
         print("sync_issues: gh unavailable, not authenticated, or no GitHub remote; nothing synced")
         return 1
-    ms = load_milestones(root, cfg)
     made = ensure_labels(root, args.dry_run)
     have = gh_json(root, "api", "repos/{owner}/{repo}/milestones?state=all&per_page=100") or []
     m_actions = milestone_plan(ms, have)

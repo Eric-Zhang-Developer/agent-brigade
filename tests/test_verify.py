@@ -1,4 +1,5 @@
 import io
+import os
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -6,6 +7,10 @@ from pathlib import Path
 import helpers
 from lib import note_section
 from verify import main
+
+# On Windows the command runs in cmd.exe: no process groups to stop, and placeholders are quoted for a POSIX shell.
+PROCESS = "Windows has no process groups: a background child of the verifier is not stopped"
+SH = "the command uses POSIX sh syntax and quoting; Windows runs it in cmd.exe"
 
 
 class Verify(helpers.RepoCase):
@@ -35,6 +40,7 @@ class Verify(helpers.RepoCase):
         sha = helpers.sh(self.root, "git", "rev-parse", "--short", "HEAD").strip()
         self.assertEqual((rc, self.last(out)), (1, f"verify: `exit 3` FAIL (exit 3) at {sha}"))
 
+    @unittest.skipIf(os.name == "nt", PROCESS)
     def test_timeout_fails_and_stops_what_it_started(self):
         marker = self.root / "survived"
         helpers.write(self.root, {".agents/config.toml": f"[verify]\ncommand = '(sleep 2; touch {marker}) & sleep 30'\ntimeout = 0.5\n"})
@@ -47,6 +53,7 @@ class Verify(helpers.RepoCase):
         time.sleep(2.5)
         self.assertFalse(marker.exists(), "a background child outlived the verifier")
 
+    @unittest.skipIf(os.name == "nt", PROCESS)
     def test_background_server_is_stopped_after_a_pass(self):
         marker = self.root / "leaked"
         rc, _ = self.run_verify(f"(sleep 1; touch {marker}) & true", "--slug", "a")
@@ -55,6 +62,7 @@ class Verify(helpers.RepoCase):
         time.sleep(1.5)
         self.assertFalse(marker.exists())
 
+    @unittest.skipIf(os.name == "nt", SH)
     def test_out_is_a_fresh_kept_evidence_folder(self):
         rc, out = self.run_verify("echo shot > {out}/screen.txt", "--slug", "map-data")
         self.assertEqual(rc, 0)
@@ -64,6 +72,7 @@ class Verify(helpers.RepoCase):
         self.assertIn("agent-evidence/map-data", str(kept))
         self.assertNotIn("evidence", helpers.sh(self.root, "git", "status", "--porcelain"))
 
+    @unittest.skipIf(os.name == "nt", SH)
     def test_placeholders_are_filled_and_the_path_is_quoted(self):
         wt = self.root / "a worktree"
         wt.mkdir()
