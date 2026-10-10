@@ -27,6 +27,10 @@ what was left out, and why.
   hour, refuses to run twice, and writes its state atomically.
 - **Weekly sampling review** turns mistakes that happened twice into structure, checks, tests or rules; optional
   gardener (findings queue) and reviewer roles; `docs/review.md`.
+- **Safer install, cleaner failures.** The installer no longer overrides existing git hooks (husky, a global
+  `core.hooksPath`) and keeps your existing `.github/` files; scripts print one line instead of a traceback when
+  `gh` is missing or `milestones.toml` is malformed. Linux and macOS are tested in CI; Windows is best-effort (gaps
+  in the README).
 - Docs corrected against the code (44 fixes).
 
 Upgrading from 0.4: re-run `npx agent-brigade@latest --profile <yours> --upgrade`. New scripts and config defaults
