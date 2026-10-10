@@ -11,3 +11,7 @@ max_parallel = 1
 
 [pr]
 warn_lines = 300
+
+[verify]
+# A CLI smoke run against a scratch notes file: add a note, then find it with a differently-cased search.
+command = 'f=$(mktemp) && JOTTER_FILE=$f python3 -m jotter add "Buy milk" && JOTTER_FILE=$f python3 -m jotter search MILK | grep -q "Buy milk"'

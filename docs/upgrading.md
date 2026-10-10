@@ -6,6 +6,17 @@ files. It never overwrites `AGENTS.md`, `specs/` or `NOW.md`, so pass
 `--overwrite-agents` if you want the rules regenerated for a new profile or size. If the project's `schema` (in
 `.agents/config.toml`) is older than the kit's, the installer stops and names the section below to follow first.
 
+## Adding the verifier step (v1.0)
+v1.0 adds `[verify].command` and `.agents/scripts/verify.py` (both arrive with the refreshed scripts; an empty
+command reads as "not set up"). The loop step that runs it lives in `AGENTS.md`, which the installer never
+overwrites. Either regenerate it with `--overwrite-agents` (you lose local edits), or add this to step 4 of the loop
+and to the done-note headings by hand, in a `contract:` PR:
+```
+4. ... then see your change running: `python3 .agents/scripts/verify.py --slug <slug> --worktree .`
+5. ... `## How to check it` (the line `verify.py` printed, or `not verified` and why) ...
+```
+Then set `command` in a `contract:` PR (see `docs/verification.md`).
+
 ## Lite → full (more agents)
 ```bash
 npx agent-brigade@latest --profile <same> --full --overwrite-agents .

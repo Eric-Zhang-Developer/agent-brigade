@@ -15,6 +15,7 @@ Every term the kit uses, in one line each.
 | Bootstrap | The one feature that builds the skeleton, contracts and CI. Everything else waits for it. |
 | Claim | Full size only: a draft PR titled `feat(<slug>): ...`. It means "I'm on this"; there's no other signup. |
 | Worktree | A separate checkout of the same repo (`git worktree add`), so agents don't trip over each other. |
+| Verifier | The project's own command (`[verify].command`) that runs the software and shows an agent the result of its change: a CLI smoke run, a headless-browser script, an HTTP check. Set by the bootstrap feature; run with `verify.py`. See `docs/verification.md`. |
 | Done note | `changes/<slug>.md`, 3–8 lines under fixed headings, written last. The only thing that marks a feature done (its issue then closes). |
 | Decision record | `specs/decisions/<slug>-<topic>.md`: context, options, choice, how to undo. |
 | Default | What an agent does when the spec is silent: the smaller, reversible option, logged. |

@@ -23,3 +23,9 @@ python3 .agents/scripts/check_gates.py --title "<PR title>" --base origin/main
 python3 .agents/scripts/check_markers.py --base origin/main
 # your tests here
 ```
+
+## Verify (see your change running)
+<!-- The bootstrap feature sets [verify].command in .agents/config.toml: one deterministic command that runs the
+software and shows the result (a CLI smoke run, a headless-browser script, an HTTP check against a local server).
+Not just unit tests. Agents run it as `python3 .agents/scripts/verify.py --slug <slug> --worktree .` and paste its
+last line into the done note. -->

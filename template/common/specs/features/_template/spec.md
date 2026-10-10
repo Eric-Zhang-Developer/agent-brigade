@@ -9,7 +9,8 @@ assignee: ""
 feature's ID, used in PR titles (`feat(<slug>): ...`), its done note (changes/<slug>.md) and its branch.
 owns = path prefixes (not globs) this feature alone may change while it's in flight; no entry may overlap another
 in-flight feature's or a frozen path. assignee: a worker name, or empty for anyone. Add `bootstrap: true` to exactly
-one feature, which may change anything and merges first. Schedule it by adding the slug to a milestone in
+one feature, which may change anything and merges first; it also sets `[verify].command` in .agents/config.toml,
+so every later agent can see its change running. Schedule it by adding the slug to a milestone in
 specs/milestones.toml; until then it's backlog. Size it so it merges as one reviewable PR, or plan it in parts. -->
 
 # Name

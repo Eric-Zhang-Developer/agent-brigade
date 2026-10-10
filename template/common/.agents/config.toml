@@ -22,6 +22,11 @@ reporter = ""                    # worker that refreshes the Status issue (full 
 warn_lines = 400                 # CI warns (never fails) above this many changed lines; 0 = off
 exclude = []                     # prefixes not counted: lockfiles, generated data
 
+[verify]
+# How an agent sees its own change running: one deterministic command (a CLI smoke run, a headless-browser script,
+# an HTTP check), not just unit tests. Shell template with {slug} {worktree}. Empty = not set up, and reported.
+command = ""
+
 [markers]
 debug_patterns = ['^\s*debugger;?\s*$', '^\s*breakpoint\(\)', '^\s*import pdb', 'console\.log\(']
 ignore = []                      # prefixes never scanned

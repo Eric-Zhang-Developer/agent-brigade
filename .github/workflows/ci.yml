@@ -42,6 +42,7 @@ jobs:
             python3 $S/check_ownership.py --root "$ex" --lint-specs
             python3 $S/check_markers.py --root "$ex" --all
             python3 $S/status.py --root "$ex" --offline --out -
+            python3 $S/verify.py --root "$ex" --slug bootstrap --worktree "$ex"
             python3 -m unittest discover -s "$ex" -t "$ex" -v
             echo "::endgroup::"
           done

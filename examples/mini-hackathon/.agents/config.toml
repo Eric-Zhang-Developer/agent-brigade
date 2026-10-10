@@ -11,3 +11,7 @@ reporter = "claude-1"
 
 [pr]
 warn_lines = 200
+
+[verify]
+# A CLI smoke run on a tiny file whose answer is known: "the" appears twice.
+command = 'f=$(mktemp) && printf "the cat the hat\n" > "$f" && python3 -m wordfreq "$f" --top 1 | grep -q "^the"'

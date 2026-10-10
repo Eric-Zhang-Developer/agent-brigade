@@ -72,6 +72,17 @@ class Hackathon(Base):
     def test_no_plans_in_final_freeze(self):
         self.assertEqual(self.gate("plan: more", at("31:00"))[0], 1)
 
+    def test_done_note_without_a_check_warns_but_passes(self):
+        note = "## What shipped\nA.\n\n## How to check it\n{}\n\n## Gaps\nNone.\n"
+        for body, warns in (("Looked at it.", True), ("", True), ("verify: `make smoke` pass", False),
+                            ("not verified: no verifier yet", False)):
+            with self.subTest(body=body):
+                rc, out = self.gate("feat(alpha): a", at("5:00"), {"src/x.py": "x\n", "changes/alpha.md": note.format(body)})
+                self.assertEqual(rc, 0, out)
+                self.assertEqual("How to check it" in out, warns, out)
+        rc, out = self.gate("fix(alpha): a", at("5:00"), {"src/y.py": "y\n"})   # fixes and no-note PRs: no warning
+        self.assertNotIn("How to check it", out)
+
     def test_report_window_and_hard_stop(self):
         self.assertEqual(self.gate("feat(reporter): r", at("34:30"))[0], 0)
         self.assertEqual(self.gate("fix(alpha): a", at("34:30"))[0], 0)
