@@ -5,6 +5,8 @@ Closes #<!-- the feature's issue -->
 
 ## What and why
 
+Left out on purpose: <!-- what you chose not to do, and why -->
+
 ## Checks
 - Spec validation: <!-- paste output or link -->
 - Verify: <!-- the line verify.py printed (fix PRs: the failing line on origin/main, then the passing one), or `not verified` and why -->

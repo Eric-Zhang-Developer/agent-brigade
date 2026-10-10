@@ -112,6 +112,33 @@ class Hackathon(Base):
         self.assertEqual(self.gate("[F01] old", at("5:00"))[0], 1)
 
 
+class ValidationEdits(Base):
+    SPEC = helpers.spec(["src/"]) + "\n## Validation\n{}\n\n## Defaults\nSmall.\n"
+    files = {".agents/config.toml": 'profile = "project"\n',
+             "specs/features/alpha/spec.md": SPEC.format("Run the smoke test."),
+             "specs/features/beta/spec.md": helpers.spec(["lib/"])}
+
+    def test_own_validation_edit_warns_never_fails(self):
+        for title in ("feat(alpha): a", "fix(alpha): a"):
+            with self.subTest(title=title):
+                rc, out = self.gate(title, "2026-10-10T12:00:00+00:00",
+                                    {"specs/features/alpha/spec.md": self.SPEC.format("Skip the smoke test.")})
+                self.assertEqual(rc, 0, out)
+                self.assertIn("changes its own `## Validation`. That's allowed, but say why", out)
+
+    def test_other_edits_dont_warn(self):
+        spec = self.SPEC.format("Run the smoke test.").replace("Small.", "Smaller.")   # outside Validation
+        cases = (("feat(alpha): a", {"specs/features/alpha/spec.md": spec}),
+                 ("feat(beta): b", {"specs/features/beta/spec.md": helpers.spec(["lib/"]) + "\n## Validation\nNew.\n"}),
+                 ("plan: p", {"specs/features/alpha/spec.md": self.SPEC.format("Other.")}))
+        for title, files in cases:
+            with self.subTest(title=title):
+                helpers.sh(self.root, "git", "checkout", "-q", "-B", "work", "main")   # fresh branch per case
+                rc, out = self.gate(title, "2026-10-10T12:00:00+00:00", files)
+                self.assertEqual(rc, 0, out)
+                self.assertNotIn("Validation", out)
+
+
 class BootstrapFirst(Base):
     files = {
         ".agents/config.toml": 'profile = "project"\n',

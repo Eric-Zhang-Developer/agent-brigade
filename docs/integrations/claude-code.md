@@ -11,4 +11,6 @@
   restart = "tmux kill-session -t {worker}; tmux new -d -s {worker} -c {worktree} 'claude --continue'"
   ```
   A resumed session should re-read `AGENTS.md`. The spec on `main`, not the conversation, carries the context.
-- **Subagents:** fine within one feature. They share the feature's `owns` and its single PR.
+- **Subagents:** fine within one feature. They share the feature's `owns` and its single PR. They don't inherit
+  the rules, so start every subagent brief with: "Read AGENTS.md and your feature's spec; you're inside feature
+  `<slug>`, which owns `<paths>`."
