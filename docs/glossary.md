@@ -20,7 +20,7 @@ Every term the kit uses, in one line each.
 | Decision record | `specs/decisions/<slug>-<topic>.md`: context, options, choice, how to undo. |
 | Default | What an agent does when the spec is silent: the smaller, reversible option, logged. |
 | `needs-human` issue | A judgment call an agent filed as a GitHub issue, with the default it took (or none, for a one-way door). Cleared at checkpoints. |
-| Status issue | One pinned GitHub issue, rewritten after every merge: done, in progress, ready, blocked, needs human. |
+| Status issue | One pinned GitHub issue, rewritten after every merge: review first (unverified done features, done notes with gaps, the most-fixed features), in progress, ready, blocked, done with verified / not verified counts, needs human. |
 | One-way door | A decision that's expensive to undo (schema, auth, data model, public API). Agents never take a default on one. |
 | Checkpoint | A moment a human checks in: reads the Status issue, clears the `needs-human` issues, approves the planner's batch. |
 | Planner | The agent role that drafts new feature specs into a `plan:` PR, keeping the backlog full. |

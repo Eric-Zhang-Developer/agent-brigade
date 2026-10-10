@@ -53,6 +53,53 @@ class Status(helpers.RepoCase):
         self.assertIn("- process overhead (contract + plan + docs): 1 of 3 (33%)", text)
         self.assertIn("- most fixed: alpha 1", text)
 
+    def note(self, check: str, gaps: str = "None.") -> str:
+        return f"## What shipped\nA thing.\n\n## How to check it\n{check}\n\n## Gaps\n{gaps}\n"
+
+    def test_verification_counts_and_review_first(self):
+        helpers.write(self.root, {
+            ".agents/config.toml": 'profile = "hackathon"\nsize = "full"\n[verify]\ncommand = "./v.sh {slug}"\n',
+            "changes/alpha.md": self.note("verify: `./v.sh alpha` pass at abc1234 (evidence: x)"),
+            "changes/beta.md": self.note("verify: `./v.sh beta` FAIL (exit 1) at abc1234"),
+            "changes/gamma.md": self.note("`make test` (12 ok)", gaps="Mobile layout untested."),
+            "changes/delta.md": self.note("- not verified: no browser here"),
+            "changes/early.md": self.note("verify: `./v.sh early` pass at abc1234", gaps="None known."),
+        })
+        self.commit("feat(early): e (#1)")
+        self.commit("fix(early): oops (#2)")
+        self.commit('Revert "feat(early): e (#1)" (#3)')
+        self.commit("fix(alpha): one (#4)")
+        text = self.build()
+        self.assertIn("## Verification (done notes)\n- verified: 2 · not verified: 3\n", text)
+        self.assertNotIn("not set up", text)
+        review = text.split("## Review first\n")[1].split("\n\n")[0].splitlines()
+        self.assertEqual(review, [
+            "- gamma: not verified; gaps: Mobile layout untested.",   # unverified and gaps first
+            "- beta: not verified",                                   # unverified ties stay alphabetical
+            "- delta: not verified",
+            "- early: fixed or reverted 2×",                          # then most fixed
+            "- alpha: fixed or reverted 1×",
+        ])
+        self.assertIn("- most fixed: early 2, alpha 1", text)        # the Loop counts the revert too
+
+    def test_review_first_says_verifier_not_set_up_and_caps(self):
+        helpers.write(self.root, {f"changes/f{i}.md": self.note("") for i in range(10)})
+        text = self.build()
+        self.assertIn("- verified: 0 · not verified: 11 · **verifier not set up**", text)
+        review = text.split("## Review first\n")[1].split("\n\n")[0].splitlines()
+        self.assertEqual(len(review), 8)
+        self.assertTrue(review[0].startswith("- **Verifier not set up**"))
+        self.assertEqual(review[-1], "- … and 5 more (see Done and Loop below)")
+
+    def test_offline_in_progress_lists_only_unfinished_feature_branches(self):
+        for b in ("v0.1.0", "v0.2", "beta", "alpha", "random"):
+            helpers.sh(self.root, "git", "branch", b)
+        text = self.build()
+        in_progress = text.split("## In progress\n")[1].split("\n\n")[0]
+        self.assertIn("- `beta`, last commit", in_progress)
+        for b in ("main", "v0.1.0", "v0.2", "alpha", "random"):     # default, version, done, not a feature
+            self.assertNotIn(f"`{b}`", in_progress)
+
     def test_online_claims_stale_ci_and_loop(self):
         prs = [{"number": 7, "title": "feat(beta): b", "isDraft": True, "updatedAt": "2026-10-10T14:50:00Z", "url": "u7"},
                {"number": 8, "title": "feat(delta): d", "isDraft": True, "updatedAt": "2026-10-10T15:59:00Z", "url": "u8"}]

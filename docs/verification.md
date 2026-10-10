@@ -23,6 +23,8 @@ with any agent tool and a standard-library script.
 
 An empty `command` is reported as "not set up". It is never hidden and never counted as passing. That keeps the rule
 in `AGENTS.md` honest: *merged*, *checked by CI*, *verified live* and *tried by a user* are four different things.
+The Status issue counts done notes as verified or not verified (no verify line counts as not verified) and lists
+the unverified ones under **Review first**.
 
 ## What `verify.py` handles for you
 - **The commit.** The result line names the commit it ran on, and says so if there were uncommitted changes. A
