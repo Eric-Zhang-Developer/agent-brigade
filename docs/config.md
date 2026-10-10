@@ -18,7 +18,8 @@ changes/                      done notes
 ```
 
 ## `.agents/config.toml`
-Every key except `profile` is optional. The defaults are shown.
+Every key is optional. The defaults are shown. `agents.reporter` and `[budget]` are read by agents and people,
+not by the scripts.
 
 ```toml
 schema = 3                     # layout version, written by the installer; it stops on an older one
@@ -77,7 +78,7 @@ name: One line
 depends_on: [map-data]         # slugs, in features/ or shipped/
 owns: [src/report/, tests/test_report]   # path prefixes, not globs; no overlap with another in-flight feature
 assignee: ""                   # a worker name; empty = anyone
-bootstrap: false               # exactly one feature may be true; it may change anything and merges first
+bootstrap: false               # at most one feature may be true; it may change anything and merges first
 ---
 ```
 What ships when, and in what order, is in `specs/milestones.toml`, not in the spec.
@@ -90,7 +91,7 @@ What ships when, and in what order, is in `specs/milestones.toml`, not in the sp
 | `fix: ...` (no scope) | Shared code with no spec; same types | anything except `frozen`, `specs/` (decisions allowed), `changes/` and in-flight features' `owns` |
 | `docs: ...` | Status and prose | `open` paths, plus Markdown outside `specs/`, `changes/`, `frozen` and in-flight `owns` |
 | `contract: ...` | Contract change, additive only | `frozen` paths + `specs/` + `open` |
-| `plan: ...` | Planner's batch or a ship; a person merges it | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md` |
+| `plan: ...` | Planner's batch or a ship; a person merges it | `specs/features/`, `specs/shipped/`, `specs/milestones.toml`, `specs/roadmap.md`, `open` paths |
 | `revert: ...` or `Revert "..."` | `git revert`, found by its "This reverts commit" line | exactly the reverted commits' files |
 
 `feat` on a feature whose done note is already on the base branch fails: use `fix(<slug>)`. A `!` after the type
@@ -113,7 +114,7 @@ What ships when, and in what order, is in `specs/milestones.toml`, not in the sp
 | `changes/<slug>.md` | Done marker, written last: 3–8 lines under `## What shipped`, `## Where it lives`, `## How to check it`, `## Gaps`. |
 | `specs/decisions/<slug>-<topic>.md` | Context, options, choice, how to undo. `000-*.md` = project-wide defaults. |
 | `specs/shipped/<milestone>/` | Written by `ship.py`: the milestone's done specs plus `README.md`, the release walkthrough. |
-| `STOP` (repo root, on `main`) | Exists = every agent stops at its next check. |
+| `STOP` (repo root, on `main`) | Exists = every agent stops at its next check (they `git fetch`). The watchdog stops once `STOP` is in its own checkout. |
 | `<git common dir>/agent-heartbeats/<worker>` | Touched by each agent every loop (first line: its worktree path). Shared by all worktrees; never committed. |
 
 ## `specs/milestones.toml` (both profiles)
@@ -153,7 +154,7 @@ The installer turns this into `.github/CODEOWNERS`. Turn on "Require review from
 `GET <url><health_path>` → `200` with JSON `{"commit": "<git sha>"}`, at least 7 hex characters.
 
 ## Script CLI
-All scripts take `--help` and `--root PATH`. Exit codes: `0` ok, `1` findings/failure, `2` usage error.
+All `.agents/scripts` take `--help` and `--root PATH`. Exit codes: `0` ok, `1` findings/failure, `2` usage error.
 
 | Script | Usage |
 |---|---|

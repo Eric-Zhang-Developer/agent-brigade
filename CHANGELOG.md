@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+Work toward v1.0.0. Each PR's changelog line is in its description until the release PR collects them
+(decision D15).
+
+## Deprecations
+
+None yet. From 1.0, a renamed config key or flag keeps working with a one-line warning for the rest of 1.x and
+is listed here; removal waits for 2.0 (`docs/stability.md`).
+
 ## v0.4.0 (2026-10-09)
 
 Easier to start, ready to go public.

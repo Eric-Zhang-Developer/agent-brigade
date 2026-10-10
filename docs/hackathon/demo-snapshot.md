@@ -13,7 +13,7 @@ on screen.
    python3 .agents/scripts/demo_snapshot.py --out public/snapshot
    ```
    This writes each response plus `manifest.json` (source URL, commit, time, checksums). Commit it in a
-   fix or release PR, so the snapshot always matches a reviewed commit.
+   `fix:` PR (or `fix(<slug>):` if a feature owns that folder), so the snapshot always matches a reviewed commit.
 3. Deploy with the snapshot switch available, and practice the demo once in snapshot mode.
 4. If the live backend fails during judging, flip the switch. Say so if asked ("this is a cached copy from commit
    abc123, taken at 9:40"): it's honest, and judges respect it.

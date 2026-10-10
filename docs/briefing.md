@@ -18,8 +18,8 @@ always understand what they've built.
 >    NOT done, verified or confirmed. Say the limits out loud.
 > 5. **What changed since the last briefing**, and why (link decisions).
 > 6. **Questions a smart outsider would ask**, with short answers.
-> Never invent a number. If you can't trace it, write "unknown" and say what would establish it. Open a PR (it
-> owns `docs/briefing.md`).
+> Never invent a number. If you can't trace it, write "unknown" and say what would establish it. Open a `docs: briefing`
+> PR.
 
 ## Reading it
 Read it out loud once before a demo. Anything you can't explain in your own words is the next thing to ask your

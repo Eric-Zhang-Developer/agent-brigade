@@ -12,7 +12,7 @@ gh auth login                                # or a fine-grained token
 git clone <your repo> ~/work/app && cd ~/work/app
 ```
 1. Start each agent in its own **persistent session**, so closing your laptop doesn't kill it. `tmux` is the
-   simplest: `tmux new -d -s claude-1 -c ~/work/app-f03 '<agent command>'`.
+   simplest: `tmux new -d -s claude-1 -c ~/.worktrees/<repo>/<slug> '<agent command>'`.
 2. Have each agent touch its heartbeat every loop. The installed `AGENTS.md` already says to:
    `d="$(git rev-parse --git-common-dir)/agent-heartbeats"; mkdir -p "$d"; pwd > "$d/<name>"`. It lives in the repo's git folder, so every worktree writes to the same place.
 3. Configure `[watchdog]` in `.agents/config.toml`:
@@ -32,5 +32,5 @@ git clone <your repo> ~/work/app && cd ~/work/app
 - Keep secrets in the VM's environment or a secrets manager, never in the repo or the launch prompt.
 
 ## Stop from your phone
-Create a file named `STOP` on `main` through the GitHub web UI. Agents stop at their next check, and the watchdog
-exits.
+Create a file named `STOP` on `main` through the GitHub web UI. Agents stop at their next check (they `git fetch`).
+The watchdog stops once `STOP` is in its own checkout: `git pull` on the machine, or `touch STOP` there.
