@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Status: time left, in progress, ready next, blocked, backlog, needs-human, main CI, and how the loop is doing.
+"""Status: what to review first, time left, in progress, ready next, blocked, done and verified, backlog, needs-human,
+main CI, and how the loop is doing.
 
   status.py --issue            rewrite the pinned "Status" issue (CI does this on every push to main)
   status.py --out -            print it;  --out FILE writes a file
@@ -18,7 +19,7 @@ from pathlib import Path
 
 from check_gates import summary
 from lib import (as_list, done_ids, gh, gh_json, git, load_config, load_milestones, load_shipped,
-                 load_specs, parse_title, parser, pick_order, root_from)
+                 load_specs, note_section, parse_title, parser, pick_order, root_from)
 
 
 def when(iso: str) -> datetime:
@@ -29,13 +30,79 @@ def age_minutes(iso: str, now: datetime) -> int:
     return int((now - when(iso)).total_seconds() // 60)
 
 
+def fix_counts(titles: list[str]) -> Counter:
+    """{slug: fix(<slug>) and reverted-<slug> merges}. GitHub's 'Revert "feat(x): ..."' counts against x."""
+    out = Counter()
+    for title in titles:
+        inner = title[len('Revert "'):].rstrip('"') if title.startswith('Revert "') else title
+        t = parse_title(inner)
+        if t and t["scope"] and (inner != title or t["kind"] in ("fix", "revert")):
+            out[t["scope"]] += 1
+    return out
+
+
+def subjects(root: Path) -> list[str]:
+    """Squash-merge titles on this branch's first-parent history (main in CI), newest first, PR numbers dropped."""
+    lines = git(root, "log", "--first-parent", "--format=%s", "-200", check=False).splitlines()  # none yet: []
+    return [re.sub(r" \(#\d+\)$", "", s) for s in lines]
+
+
+def verification(root: Path, cfg: dict, done: set[str]) -> dict[str, str]:
+    """{slug: 'verified' | 'not verified'} from each done note's `## How to check it`. Missing means not verified."""
+    out = {}
+    for slug in done:
+        body = note_section((root / cfg["paths"]["changes"] / f"{slug}.md").read_text(), "How to check it") or ""
+        lines = [x.lstrip("-* ").strip() for x in body.splitlines()]
+        passed = any(re.match(r"verify: `.*` pass\b", x) for x in lines)
+        failed = any((x.startswith("verify: ") and " FAIL" in x) or "not verified" in x.lower() for x in lines)
+        out[slug] = "verified" if passed and not failed else "not verified"
+    return out
+
+
+def gaps(root: Path, cfg: dict, slug: str) -> str:
+    """First line of the done note's `## Gaps`, or '' when it's empty or says None."""
+    body = note_section((root / cfg["paths"]["changes"] / f"{slug}.md").read_text(), "Gaps") or ""
+    first = body.splitlines()[0].lstrip("-* ").strip() if body else ""
+    return "" if re.fullmatch(r"(?i)none( known| yet)?\.?", first) else first
+
+
+def review_first(root: Path, cfg: dict, done: set[str], checked: dict[str, str], limit: int = 8) -> list[str]:
+    """What a person should look at first: no verifier, unverified done features, done notes with gaps, most-fixed."""
+    out = []
+    if not cfg["verify"]["command"]:
+        out.append("- **Verifier not set up** (`[verify].command` is empty): every done feature counts as not verified")
+    fixed = fix_counts(subjects(root))
+    top_fixed = dict(fixed.most_common(3))
+    changes = cfg["paths"]["changes"].rstrip("/")
+    stamps = {}  # slug -> when its done note last changed, so recent work outranks long-done work
+    when = 0
+    for line in git(root, "log", "--format=@%ct", "--name-only", "-500", "--", f"{changes}/", check=False).splitlines():
+        if line.startswith("@"):
+            when = int(line[1:])
+        elif line.strip():
+            stamps.setdefault(Path(line).stem, when)  # newest first, so the first time seen is the latest
+    rows = []
+    for slug in sorted(done | set(top_fixed)):
+        unverified = checked.get(slug) == "not verified"
+        gap = gaps(root, cfg, slug) if slug in done else ""
+        why = (["not verified"] if unverified else []) + ([f"gaps: {gap[:80]}"] if gap else []) + \
+              ([f"fixed or reverted {top_fixed[slug]}×"] if slug in top_fixed else [])
+        if why:
+            rows.append(((unverified, bool(gap), top_fixed.get(slug, 0), stamps.get(slug, 0)), f"- {slug}: " + "; ".join(why)))
+    rows.sort(key=lambda r: r[0], reverse=True)  # stable: ties (same flags and time) stay alphabetical
+    room = limit - len(out)
+    out += [line for _, line in rows[:room]]
+    if len(rows) > room:
+        out[-1] = f"- … and {len(rows) - room + 1} more (see Done and Loop below)"
+    return out or ["- nothing flagged"]
+
+
 def loop_stats(root: Path, now: datetime, offline: bool) -> list[str]:
     """How much of the work is product versus process, how long PRs wait, where fixes cluster, how long main was red."""
     prs = None if offline else gh_json(root, "pr", "list", "--state", "merged", "--limit", "200",
                                        "--json", "title,createdAt,mergedAt")
     if prs is None:
-        subjects = git(root, "log", "--first-parent", "--format=%s", "-200", check=False).splitlines()  # none yet: []
-        titles = [re.sub(r" \(#\d+\)$", "", s) for s in subjects]
+        titles = subjects(root)
         out = ["_Offline: counted from the last 200 commit subjects on this branch; times unknown._"]
     else:
         titles = [p["title"] for p in prs]
@@ -48,7 +115,7 @@ def loop_stats(root: Path, now: datetime, offline: bool) -> list[str]:
     out.append("- by type: " + ", ".join(f"{k} {n}" for k, n in kinds.most_common()))
     out.append(f"- process overhead (contract + plan + docs): {overhead} of {len(parsed)} "
                f"({round(100 * overhead / len(parsed))}%)")
-    fixes = Counter(t["scope"] for t in parsed if t["kind"] == "fix" and t["scope"])
+    fixes = fix_counts(titles)
     if fixes:
         out.append("- most fixed: " + ", ".join(f"{s} {n}" for s, n in fixes.most_common(3)))
     out.append(f"- reverts: {kinds['revert']}")
@@ -89,17 +156,19 @@ def build(root: Path, cfg: dict, now: datetime, offline: bool) -> str:
         f"STOP: {'present: agents must stop' if (root / 'STOP').exists() else 'not present'}",
         "",
     ]
+    checked = verification(root, cfg, done)
+    out += ["## Review first"] + review_first(root, cfg, done, checked) + [""]
 
     prs = None if offline else gh_json(root, "pr", "list", "--state", "open", "--limit", "200",
                                        "--json", "number,title,isDraft,updatedAt,url")
     claimed = set()
     out.append("## In progress")
     if prs is None:
-        out.append("_From local branches; PR state unknown (offline or gh unavailable)._")
+        out.append("_From local branches named after a feature that isn't done; PR state unknown (offline or gh unavailable)._")
         refs = git(root, "for-each-ref", "refs/heads", "--format=%(refname:short)\t%(committerdate:iso-strict)", check=False)
-        for row in refs.splitlines():
-            name, stamp = row.split("\t")
-            out.append(f"- `{name}`, last commit {age_minutes(stamp, now)} min ago")
+        rows = [row.split("\t") for row in refs.splitlines()]
+        rows = [(n, stamp) for n, stamp in rows if n in specs and n not in done]  # not main, not v0.2, not done work
+        out += [f"- `{n}`, last commit {age_minutes(stamp, now)} min ago" for n, stamp in rows] or ["- none"]
     else:
         for pr in sorted(prs, key=lambda p: p["number"]):
             t = parse_title(pr["title"])
@@ -142,6 +211,12 @@ def build(root: Path, cfg: dict, now: datetime, offline: bool) -> str:
     if shipped:
         by_m = Counter(fm["_milestone"] for fm in shipped.values())
         out.append("- shipped: " + ", ".join(f"{m} ({n})" for m, n in sorted(by_m.items())))
+    n_ok = sum(v == "verified" for v in checked.values())
+    out += ["", "## Verification (done notes)",
+            f"- verified: {n_ok} · not verified: {len(checked) - n_ok}"
+            + ("" if cfg["verify"]["command"] else " · **verifier not set up** (`[verify].command` is empty)"),
+            "- _From each note's verify.py line under `## How to check it`; no line counts as not verified. Merged, "
+            "checked by CI, verified live and tried by a user stay four different things._"]
     out += ["", "## Backlog (in no milestone)"]
     out += [f"- {s} {name(s)}" for s in backlog] or ["- none"]
 
