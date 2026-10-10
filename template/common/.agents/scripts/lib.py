@@ -47,6 +47,7 @@ DEFAULTS = {
         "secret_patterns": ["sk-", "sk_live_", "AIza", "ghp_", "github_pat_", "xox", "mongodb+srv://", "postgres://", "-----BEGIN"],
     },
     "budget": {"monthly_usd": 0, "reserve_final_hours": 3},
+    "verify": {"command": "", "timeout": 300},
 }
 
 
@@ -176,6 +177,12 @@ def done_at(root: Path, cfg: dict, ref: str) -> set[str]:
     changes = cfg["paths"]["changes"].rstrip("/")
     names = git_lines(root, "ls-tree", "--name-only", ref, f"{changes}/")
     return {Path(n).stem for n in names if n.endswith(".md")}
+
+
+def note_section(text: str, heading: str) -> str | None:
+    """Body of `## <heading>` in a done note (stripped), or None if the note has no such heading."""
+    m = re.search(rf"^##[ \t]+{re.escape(heading)}[ \t]*$(.*?)(?=^##[ \t]|\Z)", text, re.M | re.S)
+    return m.group(1).strip() if m else None
 
 
 def in_flight(specs: dict[str, dict], done: set[str]) -> dict[str, dict]:

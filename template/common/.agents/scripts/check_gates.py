@@ -8,7 +8,8 @@ Reads specs/milestones.toml (format: the comments in that file). Same rules for 
   freeze            from `freeze` before a milestone ships: only its own features (and `allow`) merge as feat;
                     fixes still merge; anything on its cut list is rejected
   final milestone   from `report_before`: only fixes, reverts, docs and `allow`; at `ship`: nothing merges
-A PR over [pr].warn_lines changed lines gets a warning, never a failure.
+A PR over [pr].warn_lines changed lines gets a warning, never a failure. So does a feat PR whose done note has no
+verify.py line (or `not verified`) under `## How to check it`.
 """
 
 import os
@@ -16,7 +17,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from lib import (TITLE_HELP, as_list, done_at, git_lines, load_config, load_milestones, load_shipped, load_specs,
-                 parse_title, parser, root_from)
+                 note_section, parse_title, parser, root_from)
 
 
 def fmt(td: timedelta) -> str:
@@ -77,6 +78,19 @@ def changed_lines(root, base: str, exclude: list[str]) -> int:
     return total
 
 
+def unchecked_note(root, cfg, t: dict) -> str | None:
+    """Warning for a feat PR whose done note has neither the verify.py line nor `not verified` under `## How to check it`."""
+    note = root / cfg["paths"]["changes"] / f"{t['scope']}.md"
+    if t["kind"] != "feature" or not note.is_file():
+        return None
+    body = note_section(note.read_text(), "How to check it")
+    if body and any(line.lstrip("-* ").startswith("verify: ") or "not verified" in line.lower() for line in body.splitlines()):
+        return None
+    return (f"{note.relative_to(root)} has no verify.py line under `## How to check it`: run "
+            f"`python3 .agents/scripts/verify.py --slug {t['scope']} --worktree .` and paste its last line, or write "
+            "`not verified` and what's missing (a unit-test command alone doesn't count)")
+
+
 def main(argv=None) -> int:
     ap = parser(__doc__)
     ap.add_argument("--title", required=True, help="PR title")
@@ -109,8 +123,9 @@ def main(argv=None) -> int:
                    "or say in the description why it's one piece")
 
     print(f"gates: {line}")
-    if big:
-        print(f"::warning::{big}" if os.environ.get("GITHUB_ACTIONS") else f"gates: warning: {big}")
+    for w in (big, unchecked_note(root, cfg, t)):
+        if w:
+            print(f"::warning::{w}" if os.environ.get("GITHUB_ACTIONS") else f"gates: warning: {w}")
     if reason:
         print(f"gates: REJECTED: {reason}")
         return 1

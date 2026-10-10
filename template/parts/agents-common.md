@@ -24,9 +24,12 @@ The spec is the source of truth. Chat and memory aren't. Everything you need is 
    `git worktree add ~/.worktrees/<repo>/<slug> -b <slug> origin/main`.
 __CLAIM__
 3. Build. Commit small; messages say *why*.
-4. Run the spec's Validation and the Checks in `specs/tech-stack.md`. Report failures honestly.
+4. Run the spec's Validation and the Checks in `specs/tech-stack.md`, then see your change running:
+   `python3 .agents/scripts/verify.py --slug <slug> --worktree .`. Report failures honestly.
 5. Write `changes/<slug>.md` **last**, 3–8 lines under these headings, so a person can follow the release later:
-   `## What shipped` · `## Where it lives` (paths) · `## How to check it` · `## Gaps` (cut, untested, unknown).
+   `## What shipped` · `## Where it lives` (paths) · `## How to check it` (the line `verify.py` printed, or
+   `not verified` and what's missing) · `## Gaps` (cut, untested, unknown, and any Validation step you skipped, with
+   the reason).
 6. Wait for CI, then squash-merge it yourself: `gh pr checks --watch && gh pr merge --squash --delete-branch`.
    Not for `plan:` PRs or PRs a CODEOWNERS rule assigns to a person: those wait for a human.
 

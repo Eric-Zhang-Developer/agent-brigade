@@ -43,9 +43,9 @@ class Install(unittest.TestCase):
         self.assertLess(time.monotonic() - start, 10)
         files = tracked_files(self.root)
         installed = [f for f in files if f not in ("app.py", ".gitignore")]
-        self.assertLessEqual(len(installed), 25, installed)  # v0.3 added ship.py
+        self.assertLessEqual(len(installed), 26, installed)  # v0.3 added ship.py, v1.0 verify.py
         for rel in ("AGENTS.md", "CLAUDE.md", "NOW.md", ".agents/config.toml", ".agents/hooks/pre-commit",
-                    ".agents/scripts/sync_issues.py", ".agents/scripts/ship.py", "specs/milestones.toml", ".github/workflows/ci.yml",
+                    ".agents/scripts/sync_issues.py", ".agents/scripts/ship.py", ".agents/scripts/verify.py", "specs/milestones.toml", ".github/workflows/ci.yml",
                     ".github/ISSUE_TEMPLATE/needs-human.md", "changes/.gitkeep", "app.py"):
             self.assertIn(rel, files)
         for absent in (".agents/scripts/verify_release.py", "specs/gates.toml", "README.md", "docs", "examples"):

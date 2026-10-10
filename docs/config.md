@@ -43,6 +43,10 @@ reporter = ""                  # worker that refreshes the Status issue
 warn_lines = 400               # CI warns (never fails) above this; 0 = off
 exclude = []                   # prefixes not counted
 
+[verify]
+command = ""                   # how an agent sees its change running; shell template: {slug} {worktree} {out}; empty = not set up
+timeout = 300                  # seconds; then it fails and everything it started is stopped
+
 [markers]
 debug_patterns = ['^\s*debugger;?\s*$', '^\s*breakpoint\(\)', '^\s*import pdb', 'console\.log\(']
 ignore = []
@@ -166,5 +170,6 @@ All `.agents/scripts` take `--help` and `--root PATH`. Exit codes: `0` ok, `1` f
 | `sync_issues.py` | `[--dry-run]` |
 | `ship.py` | `MILESTONE [--dry-run]` |
 | `watchdog.py` | `[--once] [--interval SECONDS] [--dry-run]` |
+| `verify.py` | `--slug SLUG [--worktree PATH]`: runs `[verify].command`, prints one line for the done note |
 | `verify_release.py` (hackathon) | `--commit SHA [--url URL]` |
 | `demo_snapshot.py` (hackathon) | `--out DIR [--url URL]` |
