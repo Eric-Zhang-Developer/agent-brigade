@@ -9,7 +9,7 @@ and merged into a single spec in about 20 minutes. That table turned five opinio
    should be the test, not the dataset.**
 2. **Write 3–5 plans in parallel** (agents draft, humans steer), each in `plans/<letter>/PLAN.md`. Same prompt for
    each: the problem, the user, the core loop, the stack, the riskiest assumption, what's cut.
-3. **Score them on one table.** Same criteria for every plan:
+3. **Score them on one table.** Same criteria for every plan, scored by someone who didn't write one:
 
 | Criterion | Plan A | Plan B | Plan C |
 |---|---|---|---|
@@ -19,6 +19,10 @@ and merged into a single spec in about 20 minutes. That table turned five opinio
 | Setup risk (accounts, keys, data access) | | | |
 | Each prize track it qualifies for | | | |
 | What 100 other teams will do, and how this differs | | | |
+
+If the plans diverge wildly, the prompt was unclear: fix it and redraft, don't average them. A question you could
+settle by running something (does the API return this? is it fast enough?) gets a 20-minute throwaway prototype,
+not a table row. (From pstack's `arena` skill.)
 
 4. **Keep and drop, with reasons.** For each plan, write what you keep and what you drop, and why. Merge the keeps
    into the winner.

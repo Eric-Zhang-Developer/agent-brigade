@@ -20,6 +20,8 @@ At ShellHacks, people mostly stopped writing code and started writing decisions.
 | **Reporter** | `status.py --issue`, final report (stale claims: `watchdog.py`) | Every 30 min (hackathon) / per session (project) |
 | **Judge** | Scores the live build like a judge, writes the 5 hardest questions (`docs/hackathon/judge-agent.md`) | Hours before judging |
 | **Briefer** | Keeps `docs/briefing.md` current (`briefing.md`) | Before judging / weekly |
+| **Gardener** (optional, full size) | Scans `main` for bad patterns (`review.md`) and appends one line each to `specs/context/findings.md` instead of fixing them, in a `plan:` PR. The planner batches clusters into specs | Weekly |
+| **Reviewer** (optional, full size) | Gives two different agent tools the same intent (the spec's Requirements) and rubric (`review.md`); keeps findings both raise; sorts them Act on / Consider / Noted / Dismissed, with Dismissed shown. On a sample, not every PR | Weekly (sampling review) |
 
 ## Your first hour (for a newer teammate)
 1. Read `AGENTS.md`. It's one page, and it's the whole game.

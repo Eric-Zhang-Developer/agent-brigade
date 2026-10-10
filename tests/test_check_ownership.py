@@ -116,7 +116,8 @@ class Titles(helpers.RepoCase):
 
     def test_plan_may_add_specs_and_ship(self):
         rc, out = self.check("plan: batch", {"specs/features/new-one/spec.md": "s", "specs/roadmap.md": "r",
-                                             "specs/milestones.toml": "", "specs/shipped/v0.2/README.md": "w"})
+                                             "specs/milestones.toml": "", "specs/shipped/v0.2/README.md": "w",
+                                             "specs/context/findings.md": "- f"})
         self.assertEqual(rc, 0, out)
 
     def test_plan_may_not_touch_code(self):
