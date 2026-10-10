@@ -14,6 +14,11 @@ From the v1.0 handoff (2026-10-10).
 2. Each becomes a `fix:` lint/test, a `contract:` rule, a decision, or a note that it was a one-off.
 3. `status.py` flags features with many `fix(<slug>)` PRs as environment-fix candidates, if it stays small.
 
+From the pstack review (`dev/specs/pstack-lessons.md`):
+- A mistake counts as a class once it happens twice; fix it at the highest level: structure, then lint/CI, then a test, then prose (`correct`).
+- A new check must be shown failing on the original bad commit.
+- Reject reasons: won't be true in 6 months, too specific, already covered, one-off.
+
 ## Requirements
 - Full size and the weekly routine only; lite gets nothing new.
 

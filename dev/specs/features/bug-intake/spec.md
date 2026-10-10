@@ -14,6 +14,11 @@ From the v1.0 handoff (2026-10-10).
 2. Triage rule in the installed AGENTS.md: reproduce on origin/main first; `needs-info` if not reproducible; `fix(<slug>)` if it has a spec; a planner spec if it spans features.
 3. The planner clusters related bug issues into one spec.
 
+From the pstack review (`dev/specs/pstack-lessons.md`):
+- Reproduce twice on `origin/main` through the verifier or the spec's Validation, naming the expected and observed end state (benny).
+- An open PR or commit already fixes it: verify that one (before/after), don't open a competing fix.
+- Search open issues first; a possible duplicate gets a comment, not a new issue.
+
 ## Requirements
 - GitHub Issues only. No other connectors.
 
