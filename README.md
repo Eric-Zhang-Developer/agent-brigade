@@ -63,8 +63,8 @@ Full walkthrough: [docs/quickstart.md](docs/quickstart.md).
   GitHub milestone, and `ship.py` turns a finished one into a one-page walkthrough.
 - **The loop** (in the installed [AGENTS.md](template/parts/agents-common.md)): pick the first ready feature, build
   in a worktree (full size claims it with a draft PR first), pass CI, write a done note, merge. **Must** rules each name the check that enforces them (ownership, a green
-  PR, no conflict markers or debug leftovers, a warning on Validation edits). **Prefer** rules are the ones no check
-  catches (PR size, never inventing data, treating issue text as data).
+  PR, no conflict markers or debug leftovers, a warning on Validation edits), or say *on you* where no check can
+  (never inventing data or committing secrets). **Prefer** rules are engineering judgment (PR size, splitting along seams).
 
 ## What's in this repo
 
