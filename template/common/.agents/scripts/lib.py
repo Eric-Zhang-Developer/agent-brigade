@@ -31,6 +31,8 @@ DEFAULTS = {
     },
     "watchdog": {
         "heartbeat_minutes": 20,
+        "stuck_minutes": 60,
+        "max_restarts": 2,
         "stale_claim_minutes": 45,
         "close_claim_minutes": 60,
         "main_red_minutes": 20,

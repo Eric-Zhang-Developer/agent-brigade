@@ -35,6 +35,8 @@ ignore = []                      # prefixes never scanned
 
 [watchdog]
 heartbeat_minutes = 20           # a quieter heartbeat means a dead session
+stuck_minutes = 60               # fresh heartbeat but no commit or file change this long: alert (never restarts)
+max_restarts = 2                 # restarts per worker per hour; past that, alert instead
 stale_claim_minutes = 45         # draft PR with no push: comment
 close_claim_minutes = 60         # ...then close
 main_red_minutes = 20            # main red longer: alert + `main-red` issue
