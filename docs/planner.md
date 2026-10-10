@@ -23,6 +23,8 @@ the specs go stale before anyone builds them.
 > - add its slug to a milestone's `features` in `specs/milestones.toml`, in priority order (or leave it in the
 >   backlog and say why)
 > - turn answered `needs-human` issues and demo feedback into requirements. Never invent facts; cite the context file.
+> - cluster open `bug` issues left for the planner: several slightly different reports often share one root cause,
+>   so related ones become one spec that links them all, not one spec each.
 > - add nothing on the roadmap's "Not doing" list. Add no one-way-door work without a decision record.
 > Open ONE PR titled `plan: <date> batch of N` listing each feature in one line, and why it matters now. Never
 > merge it yourself.

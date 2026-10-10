@@ -87,6 +87,15 @@ Browser recipes for particular tools go in `docs/integrations/`.
 - **Inconclusive is not a pass.** A run that couldn't reach the feature, or ran against the wrong thing, is
   `not verified`, and the note says what was missing.
 
+## Verifying someone else's fix
+When a `bug` issue already has an open PR or a commit that claims to fix it, the agent checks that fix instead of
+writing a competing one (from pstack's `benny`, `verify-existing-fix.md`). Run the same recipe twice on the baseline
+(the PR's base, or the commit before the fix), then twice on the fix, and comment one of three outcomes on the issue:
+- **Confirmed:** the baseline fails both times and the fix passes both times. Link the fix; open no PR.
+- **Insufficient:** it fails on both. Link the fix and say it didn't resolve the symptom; still no competing PR.
+- **Inconclusive:** the baseline didn't fail, the fix couldn't run, or the evidence doesn't show the end state that
+  tells broken from fixed. Say which half couldn't be measured. It is not a pass.
+
 ## Keeping it current
 Recipes go stale as features change. In the weekly routine, run `verify.py` for each recently shipped feature and
 sort any failure into one of three kinds:
